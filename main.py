@@ -131,4 +131,3 @@ t2 = threading.Thread(target = window_CV)#başlatabilmek için atar
 t1.start()#başlatır
 t2.start()#başlatır
 
-deneme
