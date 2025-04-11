@@ -29,7 +29,6 @@ def brightness_dialog():#brightness ekleme tuşuna basılınca bu açılacak
                 except ValueError:
                     continue  
 
-
 def blur_dialog(): #blur ekleme tuşuna basıldığında bu ekran açılacak ve blur seviyesi girilecek
         global blur_entry
         while True:
@@ -46,6 +45,23 @@ def blur_dialog(): #blur ekleme tuşuna basıldığında bu ekran açılacak ve 
                 except ValueError:
                     continue    
                     
+def contrast_dialog():
+    global contrast_entry
+    while True:
+        dialog = ctk.CTkInputDialog(text="Type in the contrast level make sure to enter a number or a fraction enter 1 if you dont want to change the level", title="Brightness level") #istenen yazar
+        deneme = dialog.get_input()
+
+        if deneme:  # içinin boş olmadığından emin olur
+                try:
+                    deneme = float(deneme)# int olmasını doğrular
+                    if deneme >= 1 :#sıfırdan büyük mü?
+                            contrast_entry = float(deneme)#sonrasında kullanmak için bize blur seviyesini bir değere atar
+                            return contrast_entry
+                except ValueError:
+                    continue  
+
+
+
 
 
 def window_CTk():#def yaptım çünkü thread yapmak için def olmalı
@@ -72,12 +88,9 @@ def window_CTk():#def yaptım çünkü thread yapmak için def olmalı
     button.pack(side='top' , padx=10, pady=10)#yeri vb
     button.place(x = 520 , y = 55)#yeri vb
 
-
-
-
-
-
-    
+    button = ctk.CTkButton(app, text='Contrast level' , command=contrast_dialog) #blur değerini almamız için gereken tuş
+    button.pack(side='top' , padx=10, pady=10)#yeri vb
+    button.place(x = 520 , y = 100)#yeri vb
 
 
 
