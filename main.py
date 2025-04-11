@@ -14,17 +14,31 @@ contrast_entry = 1 #sonrasında globale eklemek için atar etkilemeyen hali 1
 brightness_entry = 0#sonrasında globale eklemek için atar etkilemeyen hali 0dır
 
 
-    
+def brightness_dialog():#brightness ekleme tuşuna basılınca bu açılacak  
+    global brightness_entry
+    while True:
+        dialog = ctk.CTkInputDialog(text="Type in the brightness level and make sure its  a positive number enter 0 if you dont want to change the level", title="Brightness level") #istenen yazar
+        deneme = dialog.get_input()
+
+        if deneme:  # içinin boş olmadığından emin olur
+                try:
+                    deneme == int(deneme) and deneme != float(deneme)# int olmasını doğrular
+                    if int(deneme) >= 0 :#sıfırdan büyük mü?
+                            brightness_entry = deneme#sonrasında kullanmak için bize blur seviyesini bir değere atar
+                            return brightness_entry
+                except ValueError:
+                    continue  
+
 
 def blur_dialog(): #blur ekleme tuşuna basıldığında bu ekran açılacak ve blur seviyesi girilecek
+        global blur_entry
         while True:
-            global blur_entry 
             dialog = ctk.CTkInputDialog(text="Type in the blur level make sure its an odd number like 3,5,7 etc: or 1 if you dont want to blur", title="Blur level") #istenen yazar
             deneme = dialog.get_input()
             
             if deneme:  # içinin boş olmadığından emin olur
                 try:
-                    deneme == int(deneme)# int yapar
+                    deneme == int(deneme) and deneme != float(deneme)# int olmasını doğrular
                     if int(deneme) > 0:#sıfırdan büyük mü?
                         if int(deneme) % 2 != 0:
                             blur_entry = deneme#sonrasında kullanmak için bize blur seviyesini bir değere atar
@@ -54,6 +68,9 @@ def window_CTk():#def yaptım çünkü thread yapmak için def olmalı
     button.pack(side='top' , padx=10, pady=10)#yeri vb
     button.place(x = 520 , y = 10)#yeri vb
 
+    button = ctk.CTkButton(app, text='Brightness level' , command=brightness_dialog) #blur değerini almamız için gereken tuş
+    button.pack(side='top' , padx=10, pady=10)#yeri vb
+    button.place(x = 520 , y = 55)#yeri vb
 
 
 
@@ -107,7 +124,7 @@ def window_CV():#def yaptım çünkü thread yapmak için def olmalı
         # filters
         frame = cv2.blur(frame, (int(blur_entry), int(blur_entry))) #blur
 
-        frame = cv2.convertScaleAbs(frame, alpha=contrast_entry, beta=brightness_entry) #alpha 0-1 ise azaltır 1den büyükse artırır contrast #beta negatif ise azaltır pozitif ise artırır brightness
+        frame = cv2.convertScaleAbs(frame, alpha=float(contrast_entry), beta=float(brightness_entry)) #alpha 0-1 ise azaltır 1den büyükse artırır contrast #beta negatif ise azaltır pozitif ise artırır brightness
         
         if sharpening_entry: #burada ifle doğrulamam gerekti çünkü etki etmeyen bir değer yok                                                                               
             frame = cv2.filter2D(frame, -1 , sharpening_kernel )
