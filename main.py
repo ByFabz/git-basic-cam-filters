@@ -22,10 +22,9 @@ def brightness_dialog():#brightness ekleme tuşuna basılınca bu açılacak
 
         if deneme:  # içinin boş olmadığından emin olur
                 try:
-                    deneme = float(deneme)# int olmasını doğrular
-                    if deneme >= 0 :#sıfırdan büyük mü?
-                            brightness_entry = float(deneme)#sonrasında kullanmak için bize blur seviyesini bir değere atar
-                            return brightness_entry
+                    deneme = float(deneme)# float olur eğer stringse çalışmamasını sağlar intleri zaten çevirir
+                    brightness_entry = float(deneme)#sonrasında kullanmak için bize blur seviyesini bir değere atar
+                    return brightness_entry
                 except ValueError:
                     continue  
 
@@ -37,7 +36,7 @@ def blur_dialog(): #blur ekleme tuşuna basıldığında bu ekran açılacak ve 
             
             if deneme:  # içinin boş olmadığından emin olur
                 try:
-                    deneme == int(deneme) #and deneme != float(deneme) # int olmasını doğrular
+                    deneme == int(deneme)
                     if int(deneme) > 0:#sıfırdan büyük mü?
                         if int(deneme) % 2 != 0:
                             blur_entry = int(deneme)#sonrasında kullanmak için bize blur seviyesini bir değere atar
@@ -54,14 +53,32 @@ def contrast_dialog():
         if deneme:  # içinin boş olmadığından emin olur
                 try:
                     deneme = float(deneme)# int olmasını doğrular
-                    if deneme >= 1 :#sıfırdan büyük mü?
-                            contrast_entry = float(deneme)#sonrasında kullanmak için bize blur seviyesini bir değere atar
-                            return contrast_entry
+                    if contrast_entry >= 1:
+                        contrast_entry = float(deneme)#sonrasında kullanmak için bize blur seviyesini bir değere atar
+                        return contrast_entry
                 except ValueError:
                     continue  
 
+def sharpening_dialog():
+    global sharpening_entry
+    while True:
+        dialog = ctk.CTkInputDialog(text="Enter the sharpening level make sure the number is maximum 10 and bigger than 1 to see changes if you dont want to change something enter 0 anything bigger than 10 will look weird", title="Blur level") #istenen yazar
+        deneme = dialog.get_input()
 
 
+        if deneme:  # içinin boş olmadığından emin olur
+                try:
+                    deneme = float(deneme)# float olur eğer stringse çalışmamasını sağlar intleri zaten çevirir
+
+                    if 0 < float(deneme):
+                        sharpening_entry = float(deneme)#sonrasında kullanmak için bize blur seviyesini bir değere atar
+                        return sharpening_entry
+                    if float(deneme) == 0:
+                        sharpening_entry = None
+                        return sharpening_entry
+                except ValueError:
+                    continue  
+    
 
 
 def window_CTk():#def yaptım çünkü thread yapmak için def olmalı
@@ -79,7 +96,6 @@ def window_CTk():#def yaptım çünkü thread yapmak için def olmalı
     ctk.set_appearance_mode('dark')#arka plan
 
 
-
     button = ctk.CTkButton(app, text='Blur level' , command=blur_dialog) #blur değerini almamız için gereken tuş
     button.pack(side='top' , padx=10, pady=10)#yeri vb
     button.place(x = 520 , y = 10)#yeri vb
@@ -92,6 +108,9 @@ def window_CTk():#def yaptım çünkü thread yapmak için def olmalı
     button.pack(side='top' , padx=10, pady=10)#yeri vb
     button.place(x = 520 , y = 100)#yeri vb
 
+    button = ctk.CTkButton(app, text='Sharpening level' , command=sharpening_dialog) #blur değerini almamız için gereken tuş
+    button.pack(side='top' , padx=10, pady=10)#yeri vb
+    button.place(x = 520 , y = 145)#yeri vb
 
 
     app.mainloop()#ekranın açık olması için
@@ -129,10 +148,12 @@ def window_CV():#def yaptım çünkü thread yapmak için def olmalı
 
 
         #sharpening kernel
-        sharpening_kernel = np.array([[0, -1, 0],
-                                      [-1, sharpening_entry, -1],
-                                      [0, -1, 0]])
-
+        sharpening_kernel = np.array([
+                                        [0, -0.5, 0],
+                                        [-0.5, sharpening_entry, -0.5],
+                                        [0, -0.5, 0]
+                                                    ])
+    
 
         # filters
         frame = cv2.blur(frame, (int(blur_entry), int(blur_entry))) #blur
