@@ -62,7 +62,7 @@ def contrast_dialog():
 def sharpening_dialog():
     global sharpening_entry
     while True:
-        dialog = ctk.CTkInputDialog(text="Enter the sharpening level make sure the number is maximum 10 and bigger than 1 to see changes if you dont want to change something enter 0 anything bigger than 10 will look weird", title="Blur level") #istenen yazar
+        dialog = ctk.CTkInputDialog(text="Enter the sharpening level make sure the number is maximum 10 and bigger than 1 to see changes if you dont want to change something enter 0 anything bigger than 10 will look weird and sometimes bug the code", title="Blur level") #istenen yazar
         deneme = dialog.get_input()
 
 
@@ -70,12 +70,15 @@ def sharpening_dialog():
                 try:
                     deneme = float(deneme)# float olur eğer stringse çalışmamasını sağlar intleri zaten çevirir
 
-                    if 0 < float(deneme):
-                        sharpening_entry = float(deneme)#sonrasında kullanmak için bize blur seviyesini bir değere atar
-                        return sharpening_entry
                     if float(deneme) == 0:
                         sharpening_entry = None
                         return sharpening_entry
+                    
+
+                    if 1 < float(deneme):
+                        sharpening_entry = float(deneme)#sonrasında kullanmak için bize blur seviyesini bir değere atar
+                        return sharpening_entry
+                    
                 except ValueError:
                     continue  
     
