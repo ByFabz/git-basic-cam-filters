@@ -5,16 +5,17 @@ import numpy as np
 
 
 
-blur_entry = 1 #sonrasında globale eklemek için atar etkilemeyen hali 1dir
+blur_entry = 1 #for global we need it as 1 for no effects
 
-sharpening_entry = None #sonrasında globale eklemek için atar etki etmeyen bir değer yok o yüzden şu anda none
+sharpening_entry = None #for global we need it as none for no effects
 
-contrast_entry = 1 #sonrasında globale eklemek için atar etkilemeyen hali 1
+contrast_entry = 1 #for global we need it as 1 for no effects
 
-brightness_entry = 0#sonrasında globale eklemek için atar etkilemeyen hali 0dır
+brightness_entry = 0#for global we need it as 0 for no effects
 
 
-def brightness_dialog():#brightness ekleme tuşuna basılınca bu açılacak  
+
+def brightness_dialog():#brightness button function
     global brightness_entry
     while True:
         dialog = ctk.CTkInputDialog(text="Type in the brightness level make sure to enter a number or a fraction enter 0 if you dont want to change the level", title="Brightness level") #istenen yazar
@@ -28,7 +29,7 @@ def brightness_dialog():#brightness ekleme tuşuna basılınca bu açılacak
                 except ValueError:
                     continue  
 
-def blur_dialog(): #blur ekleme tuşuna basıldığında bu ekran açılacak ve blur seviyesi girilecek
+def blur_dialog(): #blur button function
         global blur_entry
         while True:
             dialog = ctk.CTkInputDialog(text="Type in the blur level make sure its an odd number like 3,5,7 etc: or 1 if you dont want to blur", title="Blur level") #istenen yazar
@@ -44,7 +45,7 @@ def blur_dialog(): #blur ekleme tuşuna basıldığında bu ekran açılacak ve 
                 except ValueError:
                     continue    
                     
-def contrast_dialog():
+def contrast_dialog(): #contrast button function
     global contrast_entry
     while True:
         dialog = ctk.CTkInputDialog(text="Type in the contrast level make sure to enter a number or a fraction enter 1 if you dont want to change the level", title="Brightness level") #istenen yazar
@@ -59,24 +60,24 @@ def contrast_dialog():
                 except ValueError:
                     continue  
 
-def sharpening_dialog():
+def sharpening_dialog(): #sharpening button fonction
     global sharpening_entry
     while True:
         dialog = ctk.CTkInputDialog(text="Enter the sharpening level make sure the number is maximum 10 and bigger than 1 to see changes if you dont want to change something enter 0 anything bigger than 10 will look weird and sometimes bug the code", title="Blur level") #istenen yazar
         deneme = dialog.get_input()
 
 
-        if deneme:  # içinin boş olmadığından emin olur
+        if deneme:  # makes sure there is something
                 try:
-                    deneme = float(deneme)# float olur eğer stringse çalışmamasını sağlar intleri zaten çevirir
+                    deneme = float(deneme)# makes it float 
 
-                    if float(deneme) == 0:
+                    if float(deneme) == 0: #0 means no change
                         sharpening_entry = None
                         return sharpening_entry
                     
 
                     if 1 < float(deneme):
-                        sharpening_entry = float(deneme)#sonrasında kullanmak için bize blur seviyesini bir değere atar
+                        sharpening_entry = float(deneme)#we will need it as a float
                         return sharpening_entry
                     
                 except ValueError:
@@ -84,48 +85,43 @@ def sharpening_dialog():
     
 
 
-def window_CTk():#def yaptım çünkü thread yapmak için def olmalı
-    #tuşların bulunacağı ekran
+def window_CTk():#its with def because using threads requires it
+    #global values
     global blur_entry
     global sharpening_entry
     global contrast_entry
     global brightness_entry
 
     
-    app = ctk.CTk() #butonların olacağı ekran
-    app.title('filters')#ekran ismi
-    app.geometry('1200x625')#ekran geometrisi
-    ctk.set_default_color_theme('blue')#tuşlar
-    ctk.set_appearance_mode('dark')#arka plan
+    app = ctk.CTk() #scren
+    app.title('filters')#title
+    app.geometry('1200x625')#geometry
+    ctk.set_default_color_theme('blue')#button colors 
+    ctk.set_appearance_mode('dark')#background
 
 
-    button = ctk.CTkButton(app, text='Blur level' , command=blur_dialog) #blur değerini almamız için gereken tuş
+    button = ctk.CTkButton(app, text='Blur level' , command=blur_dialog) #blur button
     button.pack(side='top' , padx=10, pady=10)#yeri vb
     button.place(x = 520 , y = 10)#yeri vb
 
-    button = ctk.CTkButton(app, text='Brightness level' , command=brightness_dialog) #blur değerini almamız için gereken tuş
+    button = ctk.CTkButton(app, text='Brightness level' , command=brightness_dialog) #brightness button
     button.pack(side='top' , padx=10, pady=10)#yeri vb
     button.place(x = 520 , y = 55)#yeri vb
 
-    button = ctk.CTkButton(app, text='Contrast level' , command=contrast_dialog) #blur değerini almamız için gereken tuş
+    button = ctk.CTkButton(app, text='Contrast level' , command=contrast_dialog) #contrast button
     button.pack(side='top' , padx=10, pady=10)#yeri vb
     button.place(x = 520 , y = 100)#yeri vb
 
-    button = ctk.CTkButton(app, text='Sharpening level' , command=sharpening_dialog) #blur değerini almamız için gereken tuş
+    button = ctk.CTkButton(app, text='Sharpening level' , command=sharpening_dialog) #sharpness button
     button.pack(side='top' , padx=10, pady=10)#yeri vb
     button.place(x = 520 , y = 145)#yeri vb
 
 
-    app.mainloop()#ekranın açık olması için
+    app.mainloop()#loop the screen
     
 
 
-
-
-
-
-
-def window_CV():#def yaptım çünkü thread yapmak için def olmalı
+def window_CV():#its with def because using threads requires it
 
     global blur_entry
     global sharpening_entry
@@ -161,9 +157,9 @@ def window_CV():#def yaptım çünkü thread yapmak için def olmalı
         # filters
         frame = cv2.blur(frame, (int(blur_entry), int(blur_entry))) #blur
 
-        frame = cv2.convertScaleAbs(frame, alpha=float(contrast_entry), beta=float(brightness_entry)) #alpha 0-1 ise azaltır 1den büyükse artırır contrast #beta negatif ise azaltır pozitif ise artırır brightness
+        frame = cv2.convertScaleAbs(frame, alpha=float(contrast_entry), beta=float(brightness_entry)) #alpha 0-1 means lowering bigger than 1 means adding contrast #negative beta means lowering positive means adding brightness
         
-        if sharpening_entry: #burada ifle doğrulamam gerekti çünkü etki etmeyen bir değer yok                                                                               
+        if sharpening_entry: #needed to see if it was none or not                                                                              
             frame = cv2.filter2D(frame, -1 , sharpening_kernel )
 
         
@@ -180,8 +176,7 @@ def window_CV():#def yaptım çünkü thread yapmak için def olmalı
 
 
 
-t1 = threading.Thread(target = window_CTk)#başlatabilmek için atar
-t2 = threading.Thread(target = window_CV)#başlatabilmek için atar
-t1.start()#başlatır
-t2.start()#başlatır
-
+t1 = threading.Thread(target = window_CTk)#assigns
+t2 = threading.Thread(target = window_CV)#assigns
+t1.start()#starts
+t2.start()#starts
