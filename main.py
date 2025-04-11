@@ -17,14 +17,14 @@ brightness_entry = 0#sonrasında globale eklemek için atar etkilemeyen hali 0d�
 def brightness_dialog():#brightness ekleme tuşuna basılınca bu açılacak  
     global brightness_entry
     while True:
-        dialog = ctk.CTkInputDialog(text="Type in the brightness level and make sure its  a positive number enter 0 if you dont want to change the level", title="Brightness level") #istenen yazar
+        dialog = ctk.CTkInputDialog(text="Type in the brightness level make sure to enter a number or a fraction enter 0 if you dont want to change the level", title="Brightness level") #istenen yazar
         deneme = dialog.get_input()
 
         if deneme:  # içinin boş olmadığından emin olur
                 try:
-                    deneme == int(deneme) and deneme != float(deneme)# int olmasını doğrular
-                    if int(deneme) >= 0 :#sıfırdan büyük mü?
-                            brightness_entry = deneme#sonrasında kullanmak için bize blur seviyesini bir değere atar
+                    deneme = float(deneme)# int olmasını doğrular
+                    if deneme >= 0 :#sıfırdan büyük mü?
+                            brightness_entry = float(deneme)#sonrasında kullanmak için bize blur seviyesini bir değere atar
                             return brightness_entry
                 except ValueError:
                     continue  
@@ -38,10 +38,10 @@ def blur_dialog(): #blur ekleme tuşuna basıldığında bu ekran açılacak ve 
             
             if deneme:  # içinin boş olmadığından emin olur
                 try:
-                    deneme == int(deneme) and deneme != float(deneme)# int olmasını doğrular
+                    deneme == int(deneme) #and deneme != float(deneme) # int olmasını doğrular
                     if int(deneme) > 0:#sıfırdan büyük mü?
                         if int(deneme) % 2 != 0:
-                            blur_entry = deneme#sonrasında kullanmak için bize blur seviyesini bir değere atar
+                            blur_entry = int(deneme)#sonrasında kullanmak için bize blur seviyesini bir değere atar
                             return blur_entry
                 except ValueError:
                     continue    
