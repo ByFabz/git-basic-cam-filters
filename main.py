@@ -3,6 +3,7 @@ import customtkinter as ctk
 from tkinter import filedialog
 import threading
 import numpy as np
+import queue
 
 
 
@@ -95,7 +96,12 @@ def sharpening_dialog(): #sharpening button fonction
                     
                 except ValueError:
                     continue  
-    
+
+
+    global shutdown_event
+    shutdown_event.set()
+    cv2.destroyWindow(frame)
+
 
 
 def window_CTk():#its with def because using threads requires it
@@ -105,37 +111,38 @@ def window_CTk():#its with def because using threads requires it
     global contrast_entry
     global brightness_entry
     global app
+    global shutdown_event
+
+    while True:
+        app = ctk.CTk() #scren
+        app.title('filters')#title
+        app.geometry('1200x625')#geometry
+        ctk.set_default_color_theme('blue')#button colors 
+        ctk.set_appearance_mode('dark')#background
 
 
-    app = ctk.CTk() #scren
-    app.title('filters')#title
-    app.geometry('1200x625')#geometry
-    ctk.set_default_color_theme('blue')#button colors 
-    ctk.set_appearance_mode('dark')#background
+        button = ctk.CTkButton(app, text='Blur level' , command=blur_dialog) #blur button
+        button.pack(side='top' , padx=10, pady=10)#yeri vb
+        button.place(x = 520 , y = 10)#yeri vb
 
+        button = ctk.CTkButton(app, text='Brightness level' , command=brightness_dialog) #brightness button
+        button.pack(side='top' , padx=10, pady=10)#yeri vb
+        button.place(x = 520 , y = 55)#yeri vb
 
-    button = ctk.CTkButton(app, text='Blur level' , command=blur_dialog) #blur button
-    button.pack(side='top' , padx=10, pady=10)#yeri vb
-    button.place(x = 520 , y = 10)#yeri vb
+        button = ctk.CTkButton(app, text='Contrast level' , command=contrast_dialog) #contrast button
+        button.pack(side='top' , padx=10, pady=10)#yeri vb
+        button.place(x = 520 , y = 100)#yeri vb
 
-    button = ctk.CTkButton(app, text='Brightness level' , command=brightness_dialog) #brightness button
-    button.pack(side='top' , padx=10, pady=10)#yeri vb
-    button.place(x = 520 , y = 55)#yeri vb
+        button = ctk.CTkButton(app, text='Sharpening level' , command=sharpening_dialog) #sharpness button
+        button.pack(side='top' , padx=10, pady=10)#yeri vb
+        button.place(x = 520 , y = 145)#yeri vb
 
-    button = ctk.CTkButton(app, text='Contrast level' , command=contrast_dialog) #contrast button
-    button.pack(side='top' , padx=10, pady=10)#yeri vb
-    button.place(x = 520 , y = 100)#yeri vb
+        button = ctk.CTkButton(app, text='Take a photo' , command=take_photo) #sharpness button
+        button.place(x = 520 , y = 575)#yeri vb
+        
+        
 
-    button = ctk.CTkButton(app, text='Sharpening level' , command=sharpening_dialog) #sharpness button
-    button.pack(side='top' , padx=10, pady=10)#yeri vb
-    button.place(x = 520 , y = 145)#yeri vb
-
-    button = ctk.CTkButton(app, text='Take a photo' , command=take_photo) #sharpness button
-    button.place(x = 520 , y = 575)#yeri vb
-    
-    
-
-    app.mainloop()#loop the screen
+        app.mainloop()#loop the screen
 
 
 
@@ -145,7 +152,8 @@ def window_CV():#its with def because using threads requires it
     global sharpening_entry
     global contrast_entry
     global brightness_entry
-    
+    global shutdown_event
+
     # 0 means first camera, 1 means webcam etc.
     cap = cv2.VideoCapture(0)
 
@@ -187,8 +195,9 @@ def window_CV():#its with def because using threads requires it
         # When clicked 'q' wait for one second and then break
         if cv2.waitKey(1) == ord('q'):
             break
-
-
+        
+        
+        
     cap.release() # Stop recording
     cv2.destroyAllWindows() # Destroys the page
 
