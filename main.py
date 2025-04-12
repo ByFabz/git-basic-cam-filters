@@ -14,7 +14,7 @@ contrast_entry = 1 #for global we need it as 1 for no effects
 
 brightness_entry = 0#for global we need it as 0 for no effects
 
-def take_photo():
+def take_photo():#take a photo button function
      file_path = filedialog.asksaveasfilename(
         defaultextension=".png",  # Default extension
         filetypes=[("PNG files", "*.png"), ("JPEG files", "*.jpg")],  # Allowed types
@@ -132,7 +132,6 @@ def window_CTk():#its with def because using threads requires it
 
     app.mainloop()#loop the screen
     
-
 
 def window_CV():#its with def because using threads requires it
     global frame
