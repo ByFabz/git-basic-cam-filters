@@ -1,5 +1,6 @@
 import cv2
 import customtkinter as ctk
+from tkinter import filedialog
 import threading
 import numpy as np
 
@@ -13,8 +14,16 @@ contrast_entry = 1 #for global we need it as 1 for no effects
 
 brightness_entry = 0#for global we need it as 0 for no effects
 
-
-
+def take_photo():
+     file_path = filedialog.asksaveasfilename(
+        defaultextension=".png",  # Default extension
+        filetypes=[("PNG files", "*.png"), ("JPEG files", "*.jpg")],  # Allowed types
+        title="Save photo as..."
+    )
+     
+     if file_path:
+          cv2.imwrite(file_path , frame)
+     
 def brightness_dialog():#brightness button function
     global brightness_entry
     while True:
@@ -116,13 +125,17 @@ def window_CTk():#its with def because using threads requires it
     button.pack(side='top' , padx=10, pady=10)#yeri vb
     button.place(x = 520 , y = 145)#yeri vb
 
+    button = ctk.CTkButton(app, text='Take a photo' , command=take_photo) #sharpness button
+    button.pack(side='top' , padx=10, pady=10)#yeri vb
+    button.place(x = 520 , y = 575)#yeri vb
+
 
     app.mainloop()#loop the screen
     
 
 
 def window_CV():#its with def because using threads requires it
-
+    global frame
     global blur_entry
     global sharpening_entry
     global contrast_entry
