@@ -15,6 +15,7 @@ contrast_entry = 1 #for global we need it as 1 for no effects
 brightness_entry = 0#for global we need it as 0 for no effects
 
 def take_photo():#take a photo button function
+
      file_path = filedialog.asksaveasfilename(
         defaultextension=".png",  # Default extension
         filetypes=[("PNG files", "*.png"), ("JPEG files", "*.jpg")],  # Allowed types
@@ -23,7 +24,10 @@ def take_photo():#take a photo button function
      
      if file_path:
           cv2.imwrite(file_path , frame)
-     
+          label = ctk.CTkLabel(app, text= str(file_path) + ' is saved')
+          label.place(x=450, y=340)  # Position the label
+          app.after(4000, lambda: label.place_forget())  # Hide after 3 seconds
+            
 def brightness_dialog():#brightness button function
     global brightness_entry
     while True:
@@ -100,8 +104,9 @@ def window_CTk():#its with def because using threads requires it
     global sharpening_entry
     global contrast_entry
     global brightness_entry
+    global app
 
-    
+
     app = ctk.CTk() #scren
     app.title('filters')#title
     app.geometry('1200x625')#geometry
@@ -126,12 +131,13 @@ def window_CTk():#its with def because using threads requires it
     button.place(x = 520 , y = 145)#yeri vb
 
     button = ctk.CTkButton(app, text='Take a photo' , command=take_photo) #sharpness button
-    button.pack(side='top' , padx=10, pady=10)#yeri vb
     button.place(x = 520 , y = 575)#yeri vb
-
+    
+    
 
     app.mainloop()#loop the screen
-    
+
+
 
 def window_CV():#its with def because using threads requires it
     global frame
