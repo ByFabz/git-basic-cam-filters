@@ -122,6 +122,24 @@ def edge_detection():
             edge_cam = 0
             break
 
+def take_edged_photo():
+
+    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+    blurred = cv2.GaussianBlur(gray, (5, 5), 0)  # Kernel size (5x5)
+    edged = cv2.Canny(blurred, 100, 200)  # The thresholds can be adjusted
+
+    file_path = filedialog.asksaveasfilename(
+        defaultextension=".png",  # Default extension
+        filetypes=[("PNG files", "*.png"), ("JPEG files", "*.jpg")],  # Allowed types
+        title="Save photo as..."
+    )    
+
+    if file_path:
+        cv2.imwrite(file_path , edged)   
+        label = ctk.CTkLabel(app, text= str(file_path) + ' is saved')
+        label.place(x=450, y=340)  # Position the label
+        app.after(4000, lambda: label.place_forget())  # Hide after 3 seconds
+    
     
 
 def window_CTk():#its with def because using threads requires it
@@ -157,6 +175,9 @@ def window_CTk():#its with def because using threads requires it
 
     button = ctk.CTkButton(app, text='Take a photo' , command=take_photo) #sharpness button
     button.place(x = 520 , y = 575)#yeri vb
+
+    button = ctk.CTkButton(app, text='Take edged photo' , command=take_edged_photo) #sharpness button
+    button.place(x = 520 , y = 530)#yeri vb
 
            
 
