@@ -4,7 +4,7 @@ from tkinter import filedialog
 import threading
 import numpy as np
 
-
+edge_cam = 0
 
 blur_entry = 1 #for global we need it as 1 for no effects
 
@@ -23,10 +23,11 @@ def take_photo():#take a photo button function
     )
      
      if file_path:
-          cv2.imwrite(file_path , frame)
-          label = ctk.CTkLabel(app, text= str(file_path) + ' is saved')
-          label.place(x=450, y=340)  # Position the label
-          app.after(4000, lambda: label.place_forget())  # Hide after 3 seconds
+
+        cv2.imwrite(file_path , frame)   
+        label = ctk.CTkLabel(app, text= str(file_path) + ' is saved')
+        label.place(x=450, y=340)  # Position the label
+        app.after(4000, lambda: label.place_forget())  # Hide after 3 seconds
             
 def brightness_dialog():#brightness button function
     global brightness_entry
@@ -104,8 +105,7 @@ def sharpening_dialog(): #sharpening button fonction
 def edge_detection():
     global edge_cam
     global frame
-    global edge_sure
-
+    global edges
 
     while True:
                 
