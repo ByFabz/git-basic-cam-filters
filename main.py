@@ -4,7 +4,7 @@ from tkinter import filedialog
 import threading
 import numpy as np
 
-edge_cam = 0
+
 
 blur_entry = 1 #for global we need it as 1 for no effects
 
@@ -104,12 +104,13 @@ def sharpening_dialog(): #sharpening button fonction
 def edge_detection():
     global edge_cam
     global frame
+    global edge_sure
+
 
     while True:
-         
-         
+                
         if edge_cam == 0:
-              while True:
+            while True:
                 edge_cam = 1
                 gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
                 blurred = cv2.GaussianBlur(gray, (5, 5), 0)  # Kernel size (5x5)
@@ -120,17 +121,8 @@ def edge_detection():
         elif edge_cam == 1:
             edge_cam = 0
             break
-    
-
-
-        cv2.destroyWindow('Edge Detection')
-    
-
-
 
     
-
-
 
 def window_CTk():#its with def because using threads requires it
     #global values
@@ -222,7 +214,7 @@ def window_CV():#its with def because using threads requires it
         cv2.imshow('cam', frame) # cam isim frame ise kamera
 
         # When clicked 'q' wait for one second and then break
-        if cv2.waitKey(1) == ord('q'):
+        if cv2.waitKey(1) & 0xFF == ord('q'):
             break
         
         
