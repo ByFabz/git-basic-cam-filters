@@ -4,7 +4,7 @@ from tkinter import filedialog
 import threading
 import numpy as np
 
-
+edge_cam = 0
 
 blur_entry = 1 #for global we need it as 1 for no effects
 
@@ -101,6 +101,35 @@ def sharpening_dialog(): #sharpening button fonction
     shutdown_event.set()
     cv2.destroyWindow(frame)
 
+def edge_detection():
+    global edge_cam
+    global frame
+
+    while True:
+         
+         
+        if edge_cam == 0:
+              while True:
+                edge_cam = 1
+                gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+                blurred = cv2.GaussianBlur(gray, (5, 5), 0)  # Kernel size (5x5)
+                edges = cv2.Canny(blurred, 100, 200)  # The thresholds can be adjusted
+                cv2.imshow('Edge Detection', edges)
+                if cv2.waitKey(1) & 0xFF == ord('q'):
+                    break
+        elif edge_cam == 1:
+            edge_cam = 0
+            break
+    
+
+
+        cv2.destroyWindow('Edge Detection')
+    
+
+
+
+    
+
 
 
 def window_CTk():#its with def because using threads requires it
@@ -120,25 +149,24 @@ def window_CTk():#its with def because using threads requires it
 
 
     button = ctk.CTkButton(app, text='Blur level' , command=blur_dialog) #blur button
-    button.pack(side='top' , padx=10, pady=10)#yeri vb
     button.place(x = 520 , y = 10)#yeri vb
 
     button = ctk.CTkButton(app, text='Brightness level' , command=brightness_dialog) #brightness button
-    button.pack(side='top' , padx=10, pady=10)#yeri vb
     button.place(x = 520 , y = 55)#yeri vb
 
     button = ctk.CTkButton(app, text='Contrast level' , command=contrast_dialog) #contrast button
-    button.pack(side='top' , padx=10, pady=10)#yeri vb
     button.place(x = 520 , y = 100)#yeri vb
 
     button = ctk.CTkButton(app, text='Sharpening level' , command=sharpening_dialog) #sharpness button
-    button.pack(side='top' , padx=10, pady=10)#yeri vb
     button.place(x = 520 , y = 145)#yeri vb
+
+    button = ctk.CTkButton(app, text='Edge detection' , command=edge_detection) #sharpness button
+    button.place(x = 520 , y = 190)
 
     button = ctk.CTkButton(app, text='Take a photo' , command=take_photo) #sharpness button
     button.place(x = 520 , y = 575)#yeri vb
-        
-        
+
+           
 
     app.mainloop()#loop the screen
 
@@ -150,6 +178,8 @@ def window_CV():#its with def because using threads requires it
     global sharpening_entry
     global contrast_entry
     global brightness_entry
+    global edge_cam
+    global frame
 
     # 0 means first camera, 1 means webcam etc.
     cap = cv2.VideoCapture(0)
@@ -178,7 +208,6 @@ def window_CV():#its with def because using threads requires it
     
 
         # filters
-        gray = cv2.cvtColor(frame , cv2.COLOR_BGR2GRAY)#easier to use effects
 
         frame = cv2.blur(frame, (int(blur_entry), int(blur_entry))) #blur
 
@@ -187,9 +216,9 @@ def window_CV():#its with def because using threads requires it
         if sharpening_entry: #needed to see if it was none or not                                                                              
             frame = cv2.filter2D(frame, -1 , sharpening_kernel )
 
-        
+
+
         # Show frames
-        frame = cv2.cvtColor(frame, cv2.COLOR_GRAY2BGR)
         cv2.imshow('cam', frame) # cam isim frame ise kamera
 
         # When clicked 'q' wait for one second and then break
