@@ -1,3 +1,5 @@
+if you are using your first camera set the code at line 198 to 0 if its your secondary set it to 1
+
 to close cameras use q
 
 when you have edged cam open the other buttons wont work
