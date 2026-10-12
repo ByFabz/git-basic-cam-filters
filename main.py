@@ -4,6 +4,10 @@ from tkinter import filedialog
 import threading
 import numpy as np
 
+
+shutdown_event = threading.Event()
+
+
 edge_cam = 0
 
 blur_entry = 1 #for global we need it as 1 for no effects
@@ -98,29 +102,22 @@ def sharpening_dialog(): #sharpening button fonction
                     continue  
 
 
-    global shutdown_event
-    shutdown_event.set()
-    cv2.destroyWindow(frame)
-
-def edge_detection():
+def edge_detection_button():
     global edge_cam
     global frame
     global edges
 
-    while True:
+    
                 
-        if edge_cam == 0:
-            while True:
-                edge_cam = 1
-                gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-                blurred = cv2.GaussianBlur(gray, (5, 5), 0)  # Kernel size (5x5)
-                edges = cv2.Canny(blurred, 100, 200)  # The thresholds can be adjusted
-                cv2.imshow('Edge Detection', edges)
-                if cv2.waitKey(1) & 0xFF == ord('q'):
-                    break
-        elif edge_cam == 1:
-            edge_cam = 0
-            break
+    if edge_cam == 0:
+            edge_cam = 1
+    elif edge_cam == 1:
+        edge_cam = 0
+            
+def get_edges(img):
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    blurred = cv2.GaussianBlur(gray, (5, 5), 0)
+    return cv2.Canny(blurred, 100, 200)
 
 def take_edged_photo():
 
@@ -144,10 +141,6 @@ def take_edged_photo():
 
 def window_CTk():#its with def because using threads requires it
     #global values
-    global blur_entry
-    global sharpening_entry
-    global contrast_entry
-    global brightness_entry
     global app
 
 
@@ -170,7 +163,7 @@ def window_CTk():#its with def because using threads requires it
     button = ctk.CTkButton(app, text='Sharpening level' , command=sharpening_dialog) #sharpness button
     button.place(x = 520 , y = 145)#yeri vb
 
-    button = ctk.CTkButton(app, text='Edge detection' , command=edge_detection) #sharpness button
+    button = ctk.CTkButton(app, text='Edge detection' , command=edge_detection_button) #sharpness button
     button.place(x = 520 , y = 190)
 
     button = ctk.CTkButton(app, text='Take a photo' , command=take_photo) #sharpness button
@@ -179,7 +172,19 @@ def window_CTk():#its with def because using threads requires it
     button = ctk.CTkButton(app, text='Take edged photo' , command=take_edged_photo) #sharpness button
     button.place(x = 520 , y = 530)#yeri vb
 
-           
+    def on_close():
+        shutdown_event.set()
+        app.destroy()
+
+    app.protocol("WM_DELETE_WINDOW", on_close)       
+
+    def check_shutdown():
+        if shutdown_event.is_set():
+            app.destroy()
+        else:
+            app.after(100, check_shutdown)
+
+    check_shutdown()
 
     app.mainloop()#loop the screen
 
@@ -192,7 +197,7 @@ def window_CV():#its with def because using threads requires it
     global contrast_entry
     global brightness_entry
     global edge_cam
-    global frame
+    
 
     # 0 means first camera, 1 means webcam etc.
     cap = cv2.VideoCapture(0)
@@ -200,15 +205,16 @@ def window_CV():#its with def because using threads requires it
     # Check camera
     if not cap.isOpened():
         print("Couldn't open camera")
-        exit()
+        shutdown_event.set()
 
     # While the program is running
-    while True:
+    while not shutdown_event.is_set():
         ret, frame = cap.read()
 
         # If no other frame can be returned break the loop
         if not ret:
             print("Can't recieve frame")
+            shutdown_event.set()
             break
 
 
@@ -229,13 +235,20 @@ def window_CV():#its with def because using threads requires it
         if sharpening_entry: #needed to see if it was none or not                                                                              
             frame = cv2.filter2D(frame, -1 , sharpening_kernel )
 
+        #display to show frame to take photos
+        display = frame
+
+        if edge_cam == 1:
+            display = get_edges(frame)
 
 
-        # Show frames
-        cv2.imshow('cam', frame) # cam isim frame ise kamera
+        # Show display
+        cv2.imshow('cam', display) # cam isim display ise kamera
 
-        # When clicked 'q' wait for one second and then break
-        if cv2.waitKey(1) & 0xFF == ord('q'):
+        # When clicked 'q' or X wait for one second and then break
+        key = cv2.waitKey(1) & 0xFF
+        if key == ord('q') or cv2.getWindowProperty('cam', cv2.WND_PROP_VISIBLE) < 1:
+            shutdown_event.set()
             break
         
         
