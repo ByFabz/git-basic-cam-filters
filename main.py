@@ -5,8 +5,8 @@ import threading
 import numpy as np
 
 
-shutdown_event = threading.Event()
 
+shutdown_event = threading.Event()
 
 edge_cam = 0
 
@@ -17,6 +17,7 @@ sharpening_entry = None #for global we need it as none for no effects
 contrast_entry = 1 #for global we need it as 1 for no effects
 
 brightness_entry = 0#for global we need it as 0 for no effects
+
 
 def take_photo():#take a photo button function
 
@@ -32,74 +33,90 @@ def take_photo():#take a photo button function
         label = ctk.CTkLabel(app, text= str(file_path) + ' is saved')
         label.place(x=450, y=340)  # Position the label
         app.after(4000, lambda: label.place_forget())  # Hide after 3 seconds
-            
+
+
 def brightness_dialog():#brightness button function
     global brightness_entry
     while True:
         dialog = ctk.CTkInputDialog(text="Type in the brightness level make sure to enter a number or a fraction enter 0 if you dont want to change the level", title="Brightness level") #istenen yazar
-        deneme = dialog.get_input()
+        input = dialog.get_input()
 
-        if deneme:  # içinin boş olmadığından emin olur
-                try:
-                    deneme = float(deneme)# float olur eğer stringse çalışmamasını sağlar intleri zaten çevirir
-                    brightness_entry = float(deneme)#sonrasında kullanmak için bize blur seviyesini bir değere atar
-                    return brightness_entry
-                except ValueError:
-                    continue  
+        if input is None or not input:
+                return
+        
+        elif input:  # içinin boş olmadığından emin olur
+            try:
+                input = float(input)# float olur eğer stringse çalışmamasını sağlar intleri zaten çevirir
+                brightness_entry = float(input)#sonrasında kullanmak için bize blur seviyesini bir değere atar
+                return brightness_entry
+            except ValueError:
+                continue  
+
 
 def blur_dialog(): #blur button function
         global blur_entry
         while True:
             dialog = ctk.CTkInputDialog(text="Type in the blur level make sure its an odd number like 3,5,7 etc: or 1 if you dont want to blur", title="Blur level") #istenen yazar
-            deneme = dialog.get_input()
+            input = dialog.get_input()
             
-            if deneme:  # içinin boş olmadığından emin olur
+            if input is None or not input:
+                return 
+            
+            elif input:  
                 try:
-                    deneme == int(deneme)
-                    if int(deneme) > 0:#sıfırdan büyük mü?
-                        if int(deneme) % 2 != 0:
-                            blur_entry = int(deneme)#sonrasında kullanmak için bize blur seviyesini bir değere atar
+                    input = int(input)
+                    if int(input) > 0:#sıfırdan büyük mü?
+                        if int(input) % 2 != 0:
+                            blur_entry = int(input)#sonrasında kullanmak için bize blur seviyesini bir değere atar
                             return blur_entry
                 except ValueError:
                     continue    
-                    
+
+
 def contrast_dialog(): #contrast button function
     global contrast_entry
     while True:
-        dialog = ctk.CTkInputDialog(text="Type in the contrast level make sure to enter a number or a fraction enter 1 if you dont want to change the level", title="Brightness level") #istenen yazar
-        deneme = dialog.get_input()
+        dialog = ctk.CTkInputDialog(text="Type in the contrast level, Dont type 0, Enter 1 if you dont want to change the level", title="Contrast level") #istenen yazar
+        input = dialog.get_input()
 
-        if deneme:  # içinin boş olmadığından emin olur
-                try:
-                    deneme = float(deneme)# int olmasını doğrular
-                    if contrast_entry >= 1:
-                        contrast_entry = float(deneme)#sonrasında kullanmak için bize blur seviyesini bir değere atar
-                        return contrast_entry
-                except ValueError:
+        if input is None or not input:
+            return
+        
+        elif input:
+            try:
+                input = float(input)# int olmasını doğrular
+                if input != 0:
+                    contrast_entry = float(input)#sonrasında kullanmak için bize blur seviyesini bir değere atar
+                    return contrast_entry
+            except ValueError:
                     continue  
+
 
 def sharpening_dialog(): #sharpening button fonction
     global sharpening_entry
     while True:
-        dialog = ctk.CTkInputDialog(text="Enter the sharpening level make sure the number is maximum 10 and bigger than 1 to see changes if you dont want to change something enter 0 anything bigger than 10 will look weird and sometimes bug the code", title="Blur level") #istenen yazar
-        deneme = dialog.get_input()
+        dialog = ctk.CTkInputDialog(text="Enter the sharpening level between 1 and 10 if you dont want to change something enter 0 ", title="Sharpening level") #istenen yazar
+        input = dialog.get_input()
 
 
-        if deneme:  # makes sure there is something
-                try:
-                    deneme = float(deneme)# makes it float 
+        if input is None or not input:
+            return  # makes sure there is something
 
-                    if float(deneme) == 0: #0 means no change
-                        sharpening_entry = None
-                        return sharpening_entry
+        elif input:
+            try:
+                input = float(input)# makes it float 
+
+                if float(input) == 0: #0 means no change
+                    sharpening_entry = None
+                    return sharpening_entry
                     
 
-                    if 1 < float(deneme):
-                        sharpening_entry = float(deneme)#we will need it as a float
-                        return sharpening_entry
+                if 1 < float(input):
+                    sharpening_entry = float(input)#we will need it as a float
+                    return sharpening_entry
                     
-                except ValueError:
-                    continue  
+            except ValueError:
+                continue  
 
 
 def edge_detection_button():
@@ -113,11 +130,13 @@ def edge_detection_button():
             edge_cam = 1
     elif edge_cam == 1:
         edge_cam = 0
-            
+
+
 def get_edges(img):
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     blurred = cv2.GaussianBlur(gray, (5, 5), 0)
     return cv2.Canny(blurred, 100, 200)
+
 
 def take_edged_photo():
 
