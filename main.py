@@ -111,7 +111,7 @@ def sharpening_dialog(): #sharpening button fonction
                     return sharpening_entry
                     
 
-                if 1 < float(input):
+                if 1 <= float(input):
                     sharpening_entry = float(input)#we will need it as a float
                     return sharpening_entry
                     
@@ -236,24 +236,30 @@ def window_CV():#its with def because using threads requires it
             shutdown_event.set()
             break
 
+        # filters
+
 
         #sharpening kernel
-        sharpening_kernel = np.array([
-                                        [0, -0.5, 0],
-                                        [-0.5, sharpening_entry, -0.5],
-                                        [0, -0.5, 0]
-                                                    ])
-    
+        if sharpening_entry is not None:
 
-        # filters
+            amount = float(sharpening_entry) / 10
+
+            sharpening_kernel = np.array([
+                                            [0, -amount, 0],
+                                            [-amount, 1 + 4 * amount, -amount],
+                                            [0, -amount, 0]
+                                                        ], dtype=np.float32)
+            
+            frame = cv2.filter2D(frame, -1 , sharpening_kernel )
+
 
         frame = cv2.blur(frame, (int(blur_entry), int(blur_entry))) #blur
 
         frame = cv2.convertScaleAbs(frame, alpha=float(contrast_entry), beta=float(brightness_entry)) #alpha 0-1 means lowering bigger than 1 means adding contrast #negative beta means lowering positive means adding brightness
         
-        if sharpening_entry: #needed to see if it was none or not                                                                              
-            frame = cv2.filter2D(frame, -1 , sharpening_kernel )
-
+                                                                                     
+        
+        
         #display to show frame to take photos
         display = frame
 
