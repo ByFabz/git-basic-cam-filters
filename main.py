@@ -6,9 +6,12 @@ import numpy as np #For the sharpening function
 import math #To be able to block inputs such as nan or inf
 
 
+
 shutdown_event = threading.Event() #The event which lets us close both screens at once
 
 frame = None #This is used to fix the issue of code bugging out when trying to take a photo before camera is ready
+
+original_frame = None #This will be used to take a photo without the filters
 
 edge_cam = 0 #To be able to check if we want the edged cam open or not
 
@@ -20,8 +23,27 @@ contrast_entry = 1 #For global we need it as 1 for no effects
 
 brightness_entry = 0 #For global we need it as 0 for no effects
 
+def take_normal_photo(): #Take a normal photo button function
 
-def take_photo(): #Take a photo button function
+    if original_frame is None: #Makes sure the camera has opened
+        print('Camera has not opened yet')
+        return
+
+    normal_photo = original_frame.copy() #Makes sure we get the exact moment they click the button
+    
+    file_path = filedialog.asksaveasfilename(
+        defaultextension=".png",
+        filetypes=[("PNG files", "*.png"), ("JPEG files", "*.jpg")],
+        title='Save photo as...'
+    )
+
+    if file_path:
+        cv2.imwrite(file_path , normal_photo)
+        label = ctk.CTkLabel(app, text= str(file_path) + ' is saved')
+        label.place(x=450, y=340)  #Position the label
+        app.after(5000, lambda: label.destroy())  #Destorys after 5 seconds
+
+def take_filtered_photo(): #Take a photo button function
 
     if frame is None: #Makes sure the camera has opened
         print("Camera has not opened yet")
@@ -41,6 +63,28 @@ def take_photo(): #Take a photo button function
         label = ctk.CTkLabel(app, text= str(file_path) + ' is saved')
         label.place(x=450, y=340)  #Position the label
         app.after(5000, lambda: label.destroy())  #Destorys after 5 seconds
+
+
+def take_edged_photo():
+
+    if frame is None: #Makes sure the camera has opened
+        print("Camera has not opened yet")
+        return
+    
+    edged = get_edges(frame) #Uses the function which makes the edged cam also makes sure we get the moment where they click the button
+
+
+    file_path = filedialog.asksaveasfilename(
+        defaultextension=".png", #Default extension
+        filetypes=[("PNG files", "*.png"), ("JPEG files", "*.jpg")], #Allowed types
+        title="Save photo as..."
+    )    
+
+    if file_path:
+        cv2.imwrite(file_path , edged)   
+        label = ctk.CTkLabel(app, text= str(file_path) + ' is saved')
+        label.place(x=450, y=340) #Position the label
+        app.after(5000, lambda: label.destroy()) #Destorys it after 5 seconds
 
 
 def brightness_dialog(): #Brightness button function
@@ -166,27 +210,6 @@ def get_edges(img):
     return cv2.Canny(blurred, 100, 200)
 
 
-def take_edged_photo():
-
-    if frame is None: #Makes sure the camera has opened
-        print("Camera has not opened yet")
-        return
-    
-    edged = get_edges(frame) #Uses the function which makes the edged cam also makes sure we get the moment where they click the button
-
-
-    file_path = filedialog.asksaveasfilename(
-        defaultextension=".png", #Default extension
-        filetypes=[("PNG files", "*.png"), ("JPEG files", "*.jpg")], #Allowed types
-        title="Save photo as..."
-    )    
-
-    if file_path:
-        cv2.imwrite(file_path , edged)   
-        label = ctk.CTkLabel(app, text= str(file_path) + ' is saved')
-        label.place(x=450, y=340) #Position the label
-        app.after(5000, lambda: label.destroy()) #Destorys it after 5 seconds
-    
     
 def window_CTk(): #The UI 
 
@@ -215,11 +238,19 @@ def window_CTk(): #The UI
     button = ctk.CTkButton(app, text='Edge detection' , command=edge_detection_button) #Edge detection button
     button.place(x = 520 , y = 190)
 
-    button = ctk.CTkButton(app, text='Take a photo' , command=take_photo) #Take a photo button
+    button = ctk.CTkButton(app, text='Reset the filters' , command=reset_button) #Take edged photo button
+    button.place(x = 520 , y = 235)
+
+    button = ctk.CTkButton(app, text='Take a photo without the filters' , command=take_normal_photo) #Take a photo button
+    button.place(x = 520 , y = 495)
+
+    button = ctk.CTkButton(app, text='Take a photo' , command=take_filtered_photo) #Take a photo button
+    button.place(x = 520 , y = 530)
+
+    button = ctk.CTkButton(app, text='Take an edged photo' , command=take_edged_photo) #Take edged photo button
     button.place(x = 520 , y = 575)
 
-    button = ctk.CTkButton(app, text='Take edged photo' , command=take_edged_photo) #Take edged photo button
-    button.place(x = 520 , y = 530)
+    
 
 
     def on_close(): #To start the shutdown event
@@ -244,7 +275,7 @@ def window_CTk(): #The UI
 def window_CV(): #The camera
 
     global frame
-    
+    global original_frame #We put it before applying the filters to have the camera without the filters
     
     cap = cv2.VideoCapture(0) #0 means the first camera, 1 means webcam etc.
 
@@ -256,6 +287,7 @@ def window_CV(): #The camera
     #While the program is running
     while not shutdown_event.is_set():
         ret, frame = cap.read()
+        original_frame = frame.copy() #Keeps the original camera as a copy to use it later if needed
 
         #If no other frame can be returned break the loop
         if not ret:
@@ -309,6 +341,21 @@ def window_CV(): #The camera
         
     cap.release() #Stops catching the camera
     cv2.destroyAllWindows() #Destroys the camera screen
+
+
+def reset_button(): #Turns every valuable back to how they were to reset the filters
+    global blur_entry
+    global contrast_entry
+    global sharpening_entry
+    global brightness_entry
+    global edge_cam
+
+    blur_entry = 1
+    contrast_entry = 1
+    sharpening_entry = None
+    brightness_entry = 0
+    edge_cam = 0
+
 
 
 t1 = threading.Thread(target = window_CTk) #Assigns
