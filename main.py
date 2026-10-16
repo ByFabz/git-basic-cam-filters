@@ -9,9 +9,13 @@ import math #To be able to block inputs such as nan or inf
 
 shutdown_event = threading.Event() #The event which lets us close both screens at once
 
+camera_change_event = threading.Event()
+
 frame = None #This is used to fix the issue of code bugging out when trying to take a photo before camera is ready
 
 original_frame = None #This will be used to take a photo without the filters
+
+camera_mode = 0 #To decide if the camera is internal or external
 
 edge_cam = 0 #To be able to check if we want the edged cam open or not
 
@@ -22,6 +26,17 @@ sharpening_entry = None #For global we need it as none for no effects
 contrast_entry = 1 #For global we need it as 1 for no effects
 
 brightness_entry = 0 #For global we need it as 0 for no effects
+
+def choose_internal_camera_mode(): #To change the variable which tells opencv to read which camera
+    global camera_mode
+    camera_mode = 0
+    camera_change_event.set()
+
+def choose_external_camera_mode():
+    global camera_mode
+    camera_mode = 1
+    camera_change_event.set()
+
 
 def take_normal_photo(): #Take a normal photo button function
 
@@ -42,6 +57,7 @@ def take_normal_photo(): #Take a normal photo button function
         label = ctk.CTkLabel(app, text= str(file_path) + ' is saved')
         label.place(x=450, y=340)  #Position the label
         app.after(5000, lambda: label.destroy())  #Destorys after 5 seconds
+
 
 def take_filtered_photo(): #Take a photo button function
 
@@ -209,7 +225,6 @@ def get_edges(img):
     blurred = cv2.GaussianBlur(gray, (5, 5), 0)
     return cv2.Canny(blurred, 100, 200)
 
-
     
 def window_CTk(): #The UI 
 
@@ -238,17 +253,23 @@ def window_CTk(): #The UI
     button = ctk.CTkButton(app, text='Edge detection' , command=edge_detection_button) #Edge detection button
     button.place(x = 520 , y = 190)
 
-    button = ctk.CTkButton(app, text='Reset the filters' , command=reset_button) #Take edged photo button
+    button = ctk.CTkButton(app, text='Reset the filters' , command=reset_button) #Reset the filters button
     button.place(x = 520 , y = 235)
 
-    button = ctk.CTkButton(app, text='Take a photo without the filters' , command=take_normal_photo) #Take a photo button
+    button = ctk.CTkButton(app, text='Take a photo without the filters' , command=take_normal_photo) #Take a normal photo button
     button.place(x = 520 , y = 495)
 
-    button = ctk.CTkButton(app, text='Take a photo' , command=take_filtered_photo) #Take a photo button
+    button = ctk.CTkButton(app, text='Take a photo' , command=take_filtered_photo) #Take a photo with the filters button
     button.place(x = 520 , y = 530)
 
-    button = ctk.CTkButton(app, text='Take an edged photo' , command=take_edged_photo) #Take edged photo button
+    button = ctk.CTkButton(app, text='Take an edged photo' , command=take_edged_photo) #Take an edged photo button
     button.place(x = 520 , y = 575)
+
+    button = ctk.CTkButton(app, text='Internal Camera' , command=choose_internal_camera_mode) #Choose internal camera button
+    button.place(x = 700 , y = 575)
+
+    button = ctk.CTkButton(app, text='External Camera' , command=choose_external_camera_mode) #Choose external camera button
+    button.place(x = 700 , y = 610)
 
     
 
@@ -276,70 +297,81 @@ def window_CV(): #The camera
 
     global frame
     global original_frame #We put it before applying the filters to have the camera without the filters
-    
-    cap = cv2.VideoCapture(0) #0 means the first camera, 1 means webcam etc.
 
 
-    if not cap.isOpened(): #Checks if the camera opened
-        print("Couldn't open camera")
-        shutdown_event.set()
-
-    #While the program is running
     while not shutdown_event.is_set():
-        ret, frame = cap.read()
-        original_frame = frame.copy() #Keeps the original camera as a copy to use it later if needed
 
-        #If no other frame can be returned break the loop
-        if not ret:
-            print("Can't recieve frame")
+        cap = cv2.VideoCapture(camera_mode) #Decides if the camera is external or internal
+
+
+        if not cap.isOpened(): #Checks if the camera opened
+            print("Couldn't open camera")
             shutdown_event.set()
-            break
 
-        
-        #Filters
+        #While the program is running
+        while not shutdown_event.is_set():
 
-        #Sharpening kernel
-        if sharpening_entry is not None:
 
-            amount = float(sharpening_entry) / 10
-
-            sharpening_kernel = np.array([
-                                            [0, -amount, 0],
-                                            [-amount, 1 + 4 * amount, -amount],
-                                            [0, -amount, 0]
-                                                        ], dtype=np.float32)
             
-            frame = cv2.filter2D(frame, -1 , sharpening_kernel )
+            ret, frame = cap.read()
+            original_frame = frame.copy() #Keeps the original camera as a copy to use it later if needed
+
+            #If no other frame can be returned break the loop
+            if not ret:
+                print("Can't recieve frame")
+                shutdown_event.set()
+                break
+
+            
+            #Filters
+
+            #Sharpening kernel
+            if sharpening_entry is not None:
+
+                amount = float(sharpening_entry) / 10
+
+                sharpening_kernel = np.array([
+                                                [0, -amount, 0],
+                                                [-amount, 1 + 4 * amount, -amount],
+                                                [0, -amount, 0]
+                                                            ], dtype=np.float32)
+                
+                frame = cv2.filter2D(frame, -1 , sharpening_kernel )
 
 
-        frame = cv2.blur(frame, (int(blur_entry), int(blur_entry))) #Blur
+            frame = cv2.blur(frame, (int(blur_entry), int(blur_entry))) #Blur
 
-        frame = cv2.convertScaleAbs(frame, alpha=float(contrast_entry), beta=float(brightness_entry)) 
-        #Alpha 0-1 means lowering bigger than 1 means adding contrast 
-        #negative beta means lowering positive means adding brightness
+            frame = cv2.convertScaleAbs(frame, alpha=float(contrast_entry), beta=float(brightness_entry)) 
+            #Alpha 0-1 means lowering bigger than 1 means adding contrast 
+            #negative beta means lowering positive means adding brightness
+            
+                                                                                        
+            
+            
+            #We use display on the screen and frame to take photos
+            display = frame
+
+            if edge_cam == 1: #Checks if the user switched on the edge detection
+                display = get_edges(frame)
+
+
+            #Shows display
+            cv2.imshow('Camera', display) 
+
+            #Checks if the user clicked the change the camera button after the camera has opened for once
+            if camera_change_event.is_set():
+                camera_change_event.clear()
+                break
+
+
+            #When clicked 'q' or X wait for one second and then break
+            key = cv2.waitKey(1) & 0xFF
+            if key == ord('q') or cv2.getWindowProperty('Camera', cv2.WND_PROP_VISIBLE) < 1:
+                shutdown_event.set()
+                break
         
-                                                                                     
         
-        
-        #We use display on the screen and frame to take photos
-        display = frame
-
-        if edge_cam == 1: #Checks if the user switched on the edge detection
-            display = get_edges(frame)
-
-
-        #Shows display
-        cv2.imshow('Camera', display) 
-
-
-        #When clicked 'q' or X wait for one second and then break
-        key = cv2.waitKey(1) & 0xFF
-        if key == ord('q') or cv2.getWindowProperty('Camera', cv2.WND_PROP_VISIBLE) < 1:
-            shutdown_event.set()
-            break
-        
-        
-    cap.release() #Stops catching the camera
+        cap.release() #Stops catching the camera
     cv2.destroyAllWindows() #Destroys the camera screen
 
 
