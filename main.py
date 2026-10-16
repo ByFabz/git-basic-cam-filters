@@ -3,10 +3,12 @@ import customtkinter as ctk #For the UI
 from tkinter import filedialog #For the take a picture functions
 import threading #To be able to open and close both screens at once
 import numpy as np #For the sharpening function
-
+import math #To be able to block inputs such as nan or inf
 
 
 shutdown_event = threading.Event() #The event which lets us close both screens at once
+
+frame = None #This is used to fix the issue of code bugging out when trying to take a photo before camera is ready
 
 edge_cam = 0 #To be able to check if we want the edged cam open or not
 
@@ -21,19 +23,24 @@ brightness_entry = 0 #For global we need it as 0 for no effects
 
 def take_photo(): #Take a photo button function
 
+    if frame is None: #Makes sure the camera has opened
+        print("Camera has not opened yet")
+        return
 
-     file_path = filedialog.asksaveasfilename(
+    photo = frame.copy() #Makes sure we get the exact moment they click the button
+
+    file_path = filedialog.asksaveasfilename(
         defaultextension=".png",  #Default extension
         filetypes=[("PNG files", "*.png"), ("JPEG files", "*.jpg")],  #Allowed types
         title="Save photo as..."
     )
      
-     if file_path:
+    if file_path:
 
-        cv2.imwrite(file_path , frame)   
+        cv2.imwrite(file_path , photo)   
         label = ctk.CTkLabel(app, text= str(file_path) + ' is saved')
         label.place(x=450, y=340)  #Position the label
-        app.after(4000, lambda: label.place_forget())  #Hide after 4 seconds
+        app.after(5000, lambda: label.destroy())  #Destorys after 5 seconds
 
 
 def brightness_dialog(): #Brightness button function
@@ -41,7 +48,7 @@ def brightness_dialog(): #Brightness button function
 
 
     while True:
-        dialog = ctk.CTkInputDialog(text="Type in the brightness level make sure to enter a number enter 0 if you dont want to change the level", title="Brightness level") #Dialog
+        dialog = ctk.CTkInputDialog(text="Type in the brightness level between -255 and 255. Make sure to enter a number. Enter 0 if you dont want to change the level", title="Brightness level") #Dialog
         input = dialog.get_input()
 
 
@@ -51,9 +58,10 @@ def brightness_dialog(): #Brightness button function
         elif input: #Checks if the input is empty
 
             try:
-                brightness_entry = float(input) #Checks if the input is right and then assigns it
-                return brightness_entry
-            
+                input = float(input) #Checks if the input is right and then assigns it
+                if -255 <= input <= 255 and math.isfinite(input):
+                    brightness_entry = input
+                    return brightness_entry
             except ValueError: #Asks again if the input was wrong
                 continue  
 
@@ -63,7 +71,7 @@ def blur_dialog(): #Blur button function
 
 
     while True:
-        dialog = ctk.CTkInputDialog(text="Type in the blur level make sure its an odd number like 3,5,7 etc: or 1 if you dont want to blur", title="Blur level") #Dialog
+        dialog = ctk.CTkInputDialog(text="Type in the blur level between 1 and 31. Make sure its a whole and odd number like 3,5,7 etc. Enter 1 if you dont want to blur", title="Blur level") #Dialog
         input = dialog.get_input()
 
 
@@ -73,8 +81,8 @@ def blur_dialog(): #Blur button function
         elif input: #Checks if the input is empty
 
             try:
-                input = float(input)
-                if input > 0:
+                input = int(input)
+                if 1 <= input <= 31:
                     if input % 2 != 0:
                         blur_entry = input
                         return blur_entry
@@ -88,7 +96,7 @@ def contrast_dialog(): #Contrast button function
 
 
     while True:
-        dialog = ctk.CTkInputDialog(text="Type in the contrast level, Dont type 0, Enter 1 if you dont want to change the level", title="Contrast level") #Dialog
+        dialog = ctk.CTkInputDialog(text="Type in the contrast level between 1 and 10. Enter 1 if you dont want to change the level", title="Contrast level") #Dialog
         input = dialog.get_input()
 
 
@@ -99,8 +107,8 @@ def contrast_dialog(): #Contrast button function
 
             try:
                 input = float(input)
-                if input != 0 and input > 0: #We dont want to enter 0 because that would mean just a black screen
-                    contrast_entry = input #Checks if the input is right and then assigns it
+                if math.isfinite(input) and 1<= input <= 10: #Makes sure the input is right
+                    contrast_entry = input #Assigns it
                     return contrast_entry
                 
             except ValueError: #Asks again if the input was wrong
@@ -114,7 +122,7 @@ def sharpening_dialog(): #Sharpening button fonction
 
 
     while True:
-        dialog = ctk.CTkInputDialog(text="Enter the sharpening level if you dont want to change something enter 0 ", title="Sharpening level") #Dialog
+        dialog = ctk.CTkInputDialog(text="Enter the sharpening level between 0 and 50. If you dont want to change something enter 0 ", title="Sharpening level") #Dialog
         input = dialog.get_input()
 
 
@@ -125,11 +133,14 @@ def sharpening_dialog(): #Sharpening button fonction
             try:
                 input = float(input) #Makes sure the input is a number 
 
+                if not math.isfinite(input): #Makes sure the input is not nan or inf
+                    continue
+
                 if input == 0: #0 means no change
                     sharpening_entry = None
                     return sharpening_entry
                     
-                if 1 <= input: 
+                if 0 < input <= 50: 
                     sharpening_entry = input #Assigns the value
                     return sharpening_entry
                     
@@ -157,7 +168,11 @@ def get_edges(img):
 
 def take_edged_photo():
 
-    edged = get_edges(frame) #Uses the function which makes the edged cam
+    if frame is None: #Makes sure the camera has opened
+        print("Camera has not opened yet")
+        return
+    
+    edged = get_edges(frame) #Uses the function which makes the edged cam also makes sure we get the moment where they click the button
 
 
     file_path = filedialog.asksaveasfilename(
@@ -170,7 +185,7 @@ def take_edged_photo():
         cv2.imwrite(file_path , edged)   
         label = ctk.CTkLabel(app, text= str(file_path) + ' is saved')
         label.place(x=450, y=340) #Position the label
-        app.after(4000, lambda: label.place_forget()) #Hide after 4 seconds
+        app.after(5000, lambda: label.destroy()) #Destorys it after 5 seconds
     
     
 def window_CTk(): #The UI 
