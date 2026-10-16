@@ -298,7 +298,7 @@ def window_CV(): #The camera
     global frame
     global original_frame #We put it before applying the filters to have the camera without the filters
 
-    #While the program is running
+    #Outer loop to check the cam
     while not shutdown_event.is_set():
 
         cap = cv2.VideoCapture(camera_mode) #Decides if the camera is external or internal
@@ -341,7 +341,7 @@ def window_CV(): #The camera
             continue
 
 
-        #While the program is running
+        #Inside loop to add filters
         while not shutdown_event.is_set():
 
 
@@ -349,7 +349,7 @@ def window_CV(): #The camera
             ret, frame = cap.read()
             original_frame = frame.copy() #Keeps the original camera as a copy to use it later if needed
 
-            ret = False
+            
 
             if not ret: #Checks if we can receive the frames
                 print("Can't receive frame")
