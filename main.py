@@ -4,7 +4,7 @@ from tkinter import filedialog #For the take a picture functions
 import threading #To be able to open and close both screens at once
 import numpy as np #For the sharpening function
 import math #To be able to block inputs such as nan or inf
-
+import time
 
 
 shutdown_event = threading.Event() #The event which lets us close both screens at once
@@ -298,15 +298,48 @@ def window_CV(): #The camera
     global frame
     global original_frame #We put it before applying the filters to have the camera without the filters
 
-
+    #While the program is running
     while not shutdown_event.is_set():
 
         cap = cv2.VideoCapture(camera_mode) #Decides if the camera is external or internal
 
 
         if not cap.isOpened(): #Checks if the camera opened
-            print("Couldn't open camera")
-            shutdown_event.set()
+            print("Can't open camera")
+            cap.release #We could not open it so we use release
+
+            #A waiting screen which tells the problem
+            waiting_screen = np.zeros((480,640,3), dtype=np.uint8) 
+
+            cv2.putText(
+                waiting_screen,
+                "Camera not found",
+                (150, 220),
+                cv2.FONT_HERSHEY_SIMPLEX,
+                1,
+                (255, 255, 255),
+                2
+            )
+
+            cv2.imshow("Camera", waiting_screen)
+            while not shutdown_event.is_set():
+                if camera_change_event.wait(timeout=0.1):
+                    camera_change_event.clear()
+                    break
+
+                key = cv2.waitKey(1) & 0xFF
+
+                if key == ord("q") or cv2.getWindowProperty(
+                    "Camera", cv2.WND_PROP_VISIBLE
+                ) < 1:
+                    shutdown_event.set()
+                    break
+
+                if shutdown_event.is_set():
+                    break
+
+            continue
+
 
         #While the program is running
         while not shutdown_event.is_set():
@@ -316,10 +349,43 @@ def window_CV(): #The camera
             ret, frame = cap.read()
             original_frame = frame.copy() #Keeps the original camera as a copy to use it later if needed
 
-            #If no other frame can be returned break the loop
-            if not ret:
-                print("Can't recieve frame")
-                shutdown_event.set()
+            ret = False
+
+            if not ret: #Checks if we can receive the frames
+                print("Can't receive frame")
+
+                #A waiting screen which tells the problem
+                waiting_screen = np.zeros((480, 640, 3), dtype=np.uint8)
+
+                cv2.putText(
+                    waiting_screen,
+                    "No frame received",
+                    (150, 220),
+                    cv2.FONT_HERSHEY_SIMPLEX,
+                    1,
+                    (255, 255, 255),
+                    2
+                )
+
+                cv2.imshow("Camera", waiting_screen)
+
+
+                while not shutdown_event.is_set():
+                    if camera_change_event.wait(timeout=0.1):
+                        camera_change_event.clear()
+                        break
+
+                    key = cv2.waitKey(1) & 0xFF
+
+                    if key == ord("q") or cv2.getWindowProperty(
+                        "Camera", cv2.WND_PROP_VISIBLE
+                    ) < 1:
+                        shutdown_event.set()
+                        break
+
+                if shutdown_event.is_set():
+                    break
+
                 break
 
             
@@ -372,6 +438,10 @@ def window_CV(): #The camera
         
         
         cap.release() #Stops catching the camera
+
+
+
+
     cv2.destroyAllWindows() #Destroys the camera screen
 
 
