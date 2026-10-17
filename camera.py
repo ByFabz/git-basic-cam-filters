@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 
 import state
-from filters_and_extras import get_edges
+from EdgeDetection_and_extras import get_edges
 
 def window_CV(): #The camera
 

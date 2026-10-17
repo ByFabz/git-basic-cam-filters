@@ -1,8 +1,8 @@
-import cv2
+import cv2 #Get_edges function uses it
 
-import state
+import state #To be able to use the main variables
 
-def get_edges(img):
+def get_edges(img): #The function which turns the img to edged version of it
 
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     blurred = cv2.GaussianBlur(gray, (5, 5), 0)

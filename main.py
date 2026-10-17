@@ -1,6 +1,7 @@
-import threading #To be able to open and close both screens at once
+#Libraries
+import threading 
 
-#modularization
+#Modularization
 import tkUI 
 import camera    
 

@@ -1,4 +1,4 @@
-import threading
+import threading #To be able to define the events
 
 shutdown_event = threading.Event() #The event which lets us close both screens at once
 camera_change_event = threading.Event() #The event which lets us change the camera mode
@@ -14,8 +14,8 @@ sharpening_entry = None #For global we need it as none for no effects
 contrast_entry = 1 #For global we need it as 1 for no effects
 brightness_entry = 0 #For global we need it as 0 for no effects
 
-blur_label = None
-brightness_label = None
-contrast_label = None
-sharpening_label = None
-edge_label = None
+blur_label = None #Indicator
+brightness_label = None #Indicator
+contrast_label = None #Indicator
+sharpening_label = None #Indicator
+edge_label = None #Indicator

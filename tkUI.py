@@ -3,7 +3,7 @@ import customtkinter as ctk
 import state
 import button_commands
 import photo_functions
-from filters_and_extras import (choose_external_camera_mode , choose_internal_camera_mode)
+from EdgeDetection_and_extras import (choose_external_camera_mode , choose_internal_camera_mode)
 
 def window_CTk(): #The UI 
 
