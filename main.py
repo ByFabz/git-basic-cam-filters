@@ -41,11 +41,13 @@ def choose_external_camera_mode():
 
 def take_normal_photo(): #Take a normal photo button function
 
-    if original_frame is None: #Makes sure the camera has opened
-        print('Camera has not opened yet')
+    current = original_frame #To stop getting a None error
+
+    if current is None: #Makes sure the camera has opened
+        print('No camera image available')
         return
 
-    normal_photo = original_frame.copy() #Makes sure we get the exact moment they click the button
+    normal_photo = current.copy() #Makes sure we get the exact moment they click the button
     
     file_path = filedialog.asksaveasfilename(
         defaultextension=".png",
@@ -75,11 +77,13 @@ def take_normal_photo(): #Take a normal photo button function
 
 def take_filtered_photo(): #Take a photo button function
 
-    if frame is None: #Makes sure the camera has opened
-        print("Camera has not opened yet")
+    current = frame #To stop getting a None error
+
+    if current is None: #Makes sure the camera has opened
+        print("No camera image available")
         return
 
-    photo = frame.copy() #Makes sure we get the exact moment they click the button
+    photo = current.copy() #Makes sure we get the exact moment they click the button
 
     file_path = filedialog.asksaveasfilename(
         defaultextension=".png",  #Default extension
@@ -109,11 +113,13 @@ def take_filtered_photo(): #Take a photo button function
 
 def take_edged_photo():
 
-    if frame is None: #Makes sure the camera has opened
-        print("Camera has not opened yet")
+    current = frame #To stop getting a None error
+
+    if current is None: #Makes sure the camera has opened
+        print("No camera image available")
         return
     
-    edged = get_edges(frame) #Uses the function which makes the edged cam also makes sure we get the moment where they click the button
+    edged = get_edges(current) #Uses the function which makes the edged cam also makes sure we get the moment where they click the button
 
 
     file_path = filedialog.asksaveasfilename(
@@ -377,7 +383,7 @@ def window_CV(): #The camera
 
         if not cap.isOpened(): #Checks if the camera opened
             print("Can't open camera")
-            cap.release #We could not open it so we use release
+            cap.release() #We could not open it so we use release
 
             #A waiting screen which tells the problem
             waiting_screen = np.zeros((480,640,3), dtype=np.uint8) 
@@ -416,11 +422,14 @@ def window_CV(): #The camera
         while not shutdown_event.is_set():
 
 
-            ret, frame = cap.read()
+            ret, raw_frame = cap.read()
             
 
             if not ret: #Checks if we can receive the frames
                 print("Can't receive frame")
+
+                frame = None #This clears the old frame if the camera suddenly stops working
+                original_frame = None #This clears the old frame if the camera suddenly stops working
 
                 #A waiting screen which tells the problem
                 waiting_screen = np.zeros((480, 640, 3), dtype=np.uint8)
@@ -457,11 +466,11 @@ def window_CV(): #The camera
                 break
 
 
-            original_frame = frame.copy() #Keeps the original camera as a copy to use it later if needed
+            original_frame = raw_frame.copy() #Keeps the original camera as a copy to use it later if needed
 
 
             #Filters
-
+            filtered = raw_frame
             #Sharpening kernel
             if sharpening_entry is not None:
 
@@ -473,23 +482,25 @@ def window_CV(): #The camera
                                                 [0, -amount, 0]
                                                             ], dtype=np.float32)
                 
-                frame = cv2.filter2D(frame, -1 , sharpening_kernel )
+                filtered = cv2.filter2D(filtered, -1 , sharpening_kernel )
 
 
-            frame = cv2.blur(frame, (int(blur_entry), int(blur_entry))) #Blur
+            filtered = cv2.blur(filtered, (int(blur_entry), int(blur_entry))) #Blur
 
-            frame = cv2.convertScaleAbs(frame, alpha=float(contrast_entry), beta=float(brightness_entry)) 
-            #Alpha 0-1 means lowering bigger than 1 means adding contrast 
+            filtered = cv2.convertScaleAbs(filtered, alpha=float(contrast_entry), beta=float(brightness_entry))
+            #bigger than 1 means adding contrast 
             #negative beta means lowering positive means adding brightness
+
+            frame = filtered
             
                                                                                         
             
             
             #We use display on the screen and frame to take photos
-            display = frame
+            display = filtered
 
             if edge_cam == 1: #Checks if the user switched on the edge detection
-                display = get_edges(frame)
+                display = get_edges(filtered)
 
 
             #Shows display
