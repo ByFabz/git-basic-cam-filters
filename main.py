@@ -4,7 +4,7 @@ from tkinter import filedialog #For the take a picture functions
 import threading #To be able to open and close both screens at once
 import numpy as np #For the sharpening function
 import math #To be able to block inputs such as nan or inf
-import time
+
 
 
 shutdown_event = threading.Event() #The event which lets us close both screens at once
@@ -52,11 +52,24 @@ def take_normal_photo(): #Take a normal photo button function
         title='Save photo as...'
     )
 
-    if file_path:
-        cv2.imwrite(file_path , normal_photo)
-        label = ctk.CTkLabel(app, text= str(file_path) + ' is saved')
-        label.place(x=450, y=340)  #Position the label
-        app.after(5000, lambda: label.destroy())  #Destorys after 5 seconds
+    if file_path: #Checks if we got a path
+            try: #We will check if the user choose another file type then we listed
+                saved = cv2.imwrite(file_path , normal_photo) 
+    
+                if saved: #If it saved we will print the normal saved answer
+                    label = ctk.CTkLabel(app, text= str(file_path) + ' is saved')
+                    label.place(x=450, y=340)  #Position the label
+                    app.after(5000, lambda: label.destroy())  #Destorys after 5 seconds
+    
+                else:
+                    label = ctk.CTkLabel(app, text="Photo could not be saved")
+                    label.place(x=450, y=340)  #Position the label
+                    app.after(5000, lambda: label.destroy())  #Destorys after 5 seconds
+    
+            except cv2.error as e: #If they did change the file type then it will not work
+                label = ctk.CTkLabel(app, text=f"Error saving photo: {e}")
+                label.place(x=450, y=340)  #Position the label
+                app.after(5000, lambda: label.destroy())  #Destorys after 5 seconds
 
 
 def take_filtered_photo(): #Take a photo button function
@@ -73,12 +86,24 @@ def take_filtered_photo(): #Take a photo button function
         title="Save photo as..."
     )
      
-    if file_path:
+    if file_path: #Checks if we got a path
+        try: #We will check if the user choose another file type then we listed
+            saved = cv2.imwrite(file_path , photo) 
 
-        cv2.imwrite(file_path , photo)   
-        label = ctk.CTkLabel(app, text= str(file_path) + ' is saved')
-        label.place(x=450, y=340)  #Position the label
-        app.after(5000, lambda: label.destroy())  #Destorys after 5 seconds
+            if saved: #If it saved we will print the normal saved answer
+                label = ctk.CTkLabel(app, text= str(file_path) + ' is saved')
+                label.place(x=450, y=340)  #Position the label
+                app.after(5000, lambda: label.destroy())  #Destorys after 5 seconds
+
+            else:
+                label = ctk.CTkLabel(app, text="Photo could not be saved")
+                label.place(x=450, y=340)  #Position the label
+                app.after(5000, lambda: label.destroy())  #Destorys after 5 seconds
+
+        except cv2.error as e: #If they did change the file type then it will not work
+            label = ctk.CTkLabel(app, text=f"Error saving photo: {e}")
+            label.place(x=450, y=340)  #Position the label
+            app.after(5000, lambda: label.destroy())  #Destorys after 5 seconds
 
 
 def take_edged_photo():
@@ -96,11 +121,24 @@ def take_edged_photo():
         title="Save photo as..."
     )    
 
-    if file_path:
-        cv2.imwrite(file_path , edged)   
-        label = ctk.CTkLabel(app, text= str(file_path) + ' is saved')
-        label.place(x=450, y=340) #Position the label
-        app.after(5000, lambda: label.destroy()) #Destorys it after 5 seconds
+    if file_path: #Checks if we got a path
+            try: #We will check if the user choose another file type then we listed
+                saved = cv2.imwrite(file_path , edged) 
+    
+                if saved: #If it saved we will print the normal saved answer
+                    label = ctk.CTkLabel(app, text= str(file_path) + ' is saved')
+                    label.place(x=450, y=340)  #Position the label
+                    app.after(5000, lambda: label.destroy())  #Destorys after 5 seconds
+    
+                else:
+                    label = ctk.CTkLabel(app, text="Photo could not be saved")
+                    label.place(x=450, y=340)  #Position the label
+                    app.after(5000, lambda: label.destroy())  #Destorys after 5 seconds
+    
+            except cv2.error as e: #If they did change the file type then it will not work
+                label = ctk.CTkLabel(app, text=f"Error saving photo: {e}")
+                label.place(x=450, y=340)  #Position the label
+                app.after(5000, lambda: label.destroy())  #Destorys after 5 seconds
 
 
 def brightness_dialog(): #Brightness button function
