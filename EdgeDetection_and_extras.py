@@ -1,5 +1,7 @@
+#Libraries
 import cv2 #Get_edges function uses it
 
+#Modularization
 import state #To be able to use the main variables
 
 def get_edges(img): #The function which turns the img to edged version of it
@@ -8,12 +10,12 @@ def get_edges(img): #The function which turns the img to edged version of it
     blurred = cv2.GaussianBlur(gray, (5, 5), 0)
     return cv2.Canny(blurred, 100, 200)
 
-def choose_internal_camera_mode(): #To change the variable which tells opencv to read which camera
+def choose_internal_camera_mode(): #To change the variable which tells opencv to read internal or external camera
     
     state.camera_mode = 0
     state.camera_change_event.set()
 
-def choose_external_camera_mode():
+def choose_external_camera_mode(): #To change the variable which tells opencv to read internal or external camera
     
     state.camera_mode = 1
     state.camera_change_event.set()

@@ -1,5 +1,7 @@
+#Libraries
 import customtkinter as ctk
 
+#Modularization
 import state
 import button_commands
 import photo_functions

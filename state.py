@@ -1,3 +1,4 @@
+#Libraries
 import threading #To be able to define the events
 
 shutdown_event = threading.Event() #The event which lets us close both screens at once

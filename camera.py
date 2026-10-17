@@ -1,11 +1,12 @@
+#Libraries
 import cv2
 import numpy as np
 
+#Modularization
 import state
 from EdgeDetection_and_extras import get_edges
 
 def window_CV(): #The camera
-
 
     cap = None #We will use it for the finally part
 
@@ -15,8 +16,8 @@ def window_CV(): #The camera
 
             cap = cv2.VideoCapture(state.camera_mode) #Decides if the camera is external or internal
 
-
             if not cap.isOpened(): #Checks if the camera opened
+
                 cap.release() #We could not open it so we use release
 
                 #A waiting screen which tells the problem
@@ -33,13 +34,15 @@ def window_CV(): #The camera
                 )
 
                 cv2.imshow("Camera", waiting_screen)
+
                 while not state.shutdown_event.is_set():
+
                     if state.camera_change_event.wait(timeout=0.1):
+
                         state.camera_change_event.clear()
                         break
 
                     key = cv2.waitKey(1) & 0xFF
-
                     if key == ord("q") or cv2.getWindowProperty(
                         "Camera", cv2.WND_PROP_VISIBLE
                     ) < 1:
@@ -55,10 +58,8 @@ def window_CV(): #The camera
             #Inside loop to add filters
             while not state.shutdown_event.is_set():
 
-
                 ret, raw_frame = cap.read()
                 
-
                 if not ret: #Checks if we can receive the frames
 
                     state.frame = None #This clears the old frame if the camera suddenly stops working
@@ -79,14 +80,12 @@ def window_CV(): #The camera
 
                     cv2.imshow("Camera", waiting_screen)
 
-
                     while not state.shutdown_event.is_set():
                         if state.camera_change_event.wait(timeout=0.1):
                             state.camera_change_event.clear()
                             break
 
                         key = cv2.waitKey(1) & 0xFF
-
                         if key == ord("q") or cv2.getWindowProperty(
                             "Camera", cv2.WND_PROP_VISIBLE
                         ) < 1:
@@ -98,12 +97,11 @@ def window_CV(): #The camera
 
                     break
 
-
                 state.original_frame = raw_frame.copy() #Keeps the original camera as a copy to use it later if needed
 
-
                 #Filters
-                filtered = raw_frame
+                filtered = raw_frame #Makes a new variable to apply the filters
+
                 #Sharpening kernel
                 if state.sharpening_entry is not None:
 
@@ -117,24 +115,19 @@ def window_CV(): #The camera
                     
                     filtered = cv2.filter2D(filtered, -1 , sharpening_kernel )
 
-
                 filtered = cv2.blur(filtered, (int(state.blur_entry), int(state.blur_entry))) #Blur
 
                 filtered = cv2.convertScaleAbs(filtered, alpha=float(state.contrast_entry), beta=float(state.brightness_entry))
                 #bigger than 1 means adding contrast 
                 #negative beta means lowering positive means adding brightness
 
-                state.frame = filtered
-                
+                state.frame = filtered #Gets the filtered version to take photos 
                                                                                             
-                
-                
-                #We use display on the screen and frame to take photos
+                #We use display on the screen 
                 display = filtered
 
                 if state.edge_cam == 1: #Checks if the user switched on the edge detection
                     display = get_edges(filtered)
-
 
                 #Shows display
                 cv2.imshow('Camera', display) 
@@ -144,17 +137,15 @@ def window_CV(): #The camera
                     state.camera_change_event.clear()
                     break
 
-
                 #When clicked 'q' or X wait for one second and then break
                 key = cv2.waitKey(1) & 0xFF
                 if key == ord('q') or cv2.getWindowProperty('Camera', cv2.WND_PROP_VISIBLE) < 1:
                     state.shutdown_event.set()
                     break
             
-            
             cap.release() #Stops catching the camera
 
-    finally:
+    finally: 
         if cap is not None:
             cap.release()
         state.shutdown_event.set()

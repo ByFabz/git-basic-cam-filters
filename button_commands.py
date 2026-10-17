@@ -1,3 +1,4 @@
+#Libraries
 import customtkinter as ctk
 import state
 import math
@@ -109,7 +110,7 @@ def sharpening_dialog(): #Sharpening button fonction
             except ValueError: #Asks again if the input was wrong
                 continue 
 
-def edge_detection_button():
+def edge_detection_button(): #Turns the edge detection on or of
     
 
 
@@ -121,7 +122,7 @@ def edge_detection_button():
         state.edge_cam = 0
         state.edge_label.configure(text = 'Edge detection is closed')
 
-def reset_button(): #Turns every valuable back to how they were to reset the filters
+def reset_button(): #Turns every valuable back to how they were by assigning them to their base values to reset the filters
     
     
 
