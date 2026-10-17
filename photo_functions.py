@@ -3,7 +3,7 @@ import state
 from tkinter import filedialog
 import cv2
 
-import filters_and_extras
+from EdgeDetection_and_extras import get_edges
 
 def take_normal_photo(app): #Take a normal photo button function
 
@@ -83,7 +83,7 @@ def take_edged_photo(app):
         print("No camera image available")
         return
     
-    edged = filters_and_extras.get_edges(current) #Uses the function which makes the edged cam also makes sure we get the moment where they click the button
+    edged = get_edges(current) #Uses the function which makes the edged cam also makes sure we get the moment where they click the button
 
 
     file_path = filedialog.asksaveasfilename(
