@@ -1,7 +1,9 @@
 #Libraries
 import customtkinter as ctk
-import state
 import math
+
+#Modularization
+import state
 
 def brightness_dialog(): #Brightness button function
     

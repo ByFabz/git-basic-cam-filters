@@ -1,12 +1,11 @@
 #Libraries
 import customtkinter as ctk
-import state
 from tkinter import filedialog
 import cv2
 
 #Modularization
 from EdgeDetection_and_extras import get_edges
-
+import state
 
 def show_message(app, message):  # Displays a message for 5 seconds
     label = ctk.CTkLabel(app, text=message)
