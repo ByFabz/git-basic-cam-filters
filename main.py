@@ -1,3 +1,4 @@
+#libraries
 import cv2 #For the filters and capturing the screen
 import customtkinter as ctk #For the UI
 from tkinter import filedialog #For the take a picture functions
@@ -5,43 +6,27 @@ import threading #To be able to open and close both screens at once
 import numpy as np #For the sharpening function
 import math #To be able to block inputs such as nan or inf
 
+#modularization
+import state
 
 
-shutdown_event = threading.Event() #The event which lets us close both screens at once
-camera_change_event = threading.Event() #The event which lets us change the camera mode
 
-frame = None #This is used to fix the issue of code bugging out when trying to take a photo before camera is ready
-original_frame = None #This will be used to take a photo without the filters
-
-camera_mode = 0 #To decide if the camera is internal or external
-
-edge_cam = 0 #To be able to check if we want the edged cam open or not
-blur_entry = 1 #For global we need it as 1 for no effects
-sharpening_entry = None #For global we need it as none for no effects
-contrast_entry = 1 #For global we need it as 1 for no effects
-brightness_entry = 0 #For global we need it as 0 for no effects
-
-blur_label = None
-brightness_label = None
-contrast_label = None
-sharpening_label = None
-edge_label = None
 
 
 def choose_internal_camera_mode(): #To change the variable which tells opencv to read which camera
-    global camera_mode
-    camera_mode = 0
+    
+    state.camera_mode = 0
     camera_change_event.set()
 
 def choose_external_camera_mode():
-    global camera_mode
-    camera_mode = 1
+    
+    state.camera_mode = 1
     camera_change_event.set()
 
 
 def take_normal_photo(): #Take a normal photo button function
 
-    current = original_frame #To stop getting a None error
+    current = state.original_frame #To stop getting a None error
 
     if current is None: #Makes sure the camera has opened
         print('No camera image available')
@@ -77,7 +62,7 @@ def take_normal_photo(): #Take a normal photo button function
 
 def take_filtered_photo(): #Take a photo button function
 
-    current = frame #To stop getting a None error
+    current = state.frame #To stop getting a None error
 
     if current is None: #Makes sure the camera has opened
         print("No camera image available")
@@ -113,7 +98,7 @@ def take_filtered_photo(): #Take a photo button function
 
 def take_edged_photo():
 
-    current = frame #To stop getting a None error
+    current = state.frame #To stop getting a None error
 
     if current is None: #Makes sure the camera has opened
         print("No camera image available")
@@ -149,7 +134,7 @@ def take_edged_photo():
 
 
 def brightness_dialog(): #Brightness button function
-    global brightness_entry
+    
 
 
     while True:
@@ -165,15 +150,15 @@ def brightness_dialog(): #Brightness button function
             try:
                 input = float(input) #Checks if the input is right and then assigns it
                 if -255 <= input <= 255 and math.isfinite(input):
-                    brightness_entry = input
-                    brightness_label.configure(text = f'Brightness: {brightness_entry}')
+                    state.brightness_entry = input
+                    state.brightness_label.configure(text = f'Brightness: {state.brightness_entry}')
                     return 
             except ValueError: #Asks again if the input was wrong
                 continue  
 
 
 def blur_dialog(): #Blur button function
-    global blur_entry
+    
 
 
     while True:
@@ -190,8 +175,8 @@ def blur_dialog(): #Blur button function
                 input = int(input)
                 if 1 <= input <= 31:
                     if input % 2 != 0:
-                        blur_entry = input
-                        blur_label.configure(text = f'Blur: {blur_entry}')
+                        state.blur_entry = input
+                        state.blur_label.configure(text = f'Blur: {state.blur_entry}')
                         return 
                     
             except ValueError: #Asks again if the input was wrong
@@ -199,7 +184,7 @@ def blur_dialog(): #Blur button function
 
 
 def contrast_dialog(): #Contrast button function
-    global contrast_entry
+    
 
 
     while True:
@@ -215,8 +200,8 @@ def contrast_dialog(): #Contrast button function
             try:
                 input = float(input)
                 if math.isfinite(input) and 1<= input <= 10: #Makes sure the input is right
-                    contrast_entry = input #Assigns it
-                    contrast_label.configure(text = f'Contrast: {contrast_entry}')
+                    state.contrast_entry = input #Assigns it
+                    state.contrast_label.configure(text = f'Contrast: {state.contrast_entry}')
                     return 
                 
             except ValueError: #Asks again if the input was wrong
@@ -226,7 +211,7 @@ def contrast_dialog(): #Contrast button function
 def sharpening_dialog(): #Sharpening button fonction
 
 
-    global sharpening_entry
+    
 
 
     while True:
@@ -245,13 +230,13 @@ def sharpening_dialog(): #Sharpening button fonction
                     continue
 
                 if input == 0: #0 means no change
-                    sharpening_entry = None
-                    sharpening_label.configure(text = f'Sharpening: 0')
+                    state.sharpening_entry = None
+                    state.sharpening_label.configure(text = f'Sharpening: 0')
                     return 
                     
                 if 0 < input <= 50: 
-                    sharpening_entry = input #Assigns the value
-                    sharpening_label.configure(text = f'Sharpening: {sharpening_entry}')
+                    state.sharpening_entry = input #Assigns the value
+                    state.sharpening_label.configure(text = f'Sharpening: {state.sharpening_entry}')
                     return 
                     
             except ValueError: #Asks again if the input was wrong
@@ -259,16 +244,16 @@ def sharpening_dialog(): #Sharpening button fonction
 
 
 def edge_detection_button():
-    global edge_cam
+    
 
 
-    if edge_cam == 0:
-            edge_cam = 1
-            edge_label.configure(text = 'Edge detection is open')
+    if state.edge_cam == 0:
+            state.edge_cam = 1
+            state.edge_label.configure(text = 'Edge detection is open')
 
-    elif edge_cam == 1:
-        edge_cam = 0
-        edge_label.configure(text = 'Edge detection is closed')
+    elif state.edge_cam == 1:
+        state.edge_cam = 0
+        state.edge_label.configure(text = 'Edge detection is closed')
 
 
 def get_edges(img):
@@ -281,11 +266,6 @@ def get_edges(img):
 def window_CTk(): #The UI 
 
     global app
-    global blur_label 
-    global brightness_label 
-    global contrast_label 
-    global sharpening_label 
-    global edge_label
 
     app = ctk.CTk() #Scren
     app.title('filters') #Title
@@ -333,34 +313,34 @@ def window_CTk(): #The UI
 
 
     #Indicator labels
-    blur_label = ctk.CTkLabel(app, text="Blur: 1")
-    blur_label.place(x=220, y=10)
+    state.blur_label = ctk.CTkLabel(app, text="Blur: 1")
+    state.blur_label.place(x=220, y=10)
 
-    contrast_label = ctk.CTkLabel(app, text="Contrast: 1")
-    contrast_label.place(x=220, y=100)
+    state.contrast_label = ctk.CTkLabel(app, text="Contrast: 1")
+    state.contrast_label.place(x=220, y=100)
 
-    sharpening_label = ctk.CTkLabel(app, text="Sharpening: 0")
-    sharpening_label.place(x=220, y=145)
+    state.sharpening_label = ctk.CTkLabel(app, text="Sharpening: 0")
+    state.sharpening_label.place(x=220, y=145)
 
-    brightness_label = ctk.CTkLabel(app, text="Brightness: 0")
-    brightness_label.place(x=220, y=55)
+    state.brightness_label = ctk.CTkLabel(app, text="Brightness: 0")
+    state.brightness_label.place(x=220, y=55)
 
-    edge_label = ctk.CTkLabel(app, text="Edge detection is closed")
-    edge_label.place(x=220, y=190)
+    state.edge_label = ctk.CTkLabel(app, text="Edge detection is closed")
+    state.edge_label.place(x=220, y=190)
 
     
 
 
     def on_close(): #To start the shutdown event
 
-        shutdown_event.set()
+        state.shutdown_event.set()
         app.destroy()
 
     app.protocol("WM_DELETE_WINDOW", on_close) #Calls the function which starts the shutdown event       
 
     def check_shutdown(): #Checks if the shutdown event has been started every 100 milliseconds 
 
-        if shutdown_event.is_set():
+        if state.shutdown_event.is_set():
             app.destroy()
         else:
             app.after(100, check_shutdown)
@@ -372,16 +352,14 @@ def window_CTk(): #The UI
 
 def window_CV(): #The camera
 
-    global frame
-    global original_frame #We put it before applying the filters to have the camera without the filters
 
     cap = None #We will use it for the finally part
 
     try: #We use try and finally just so that if we get an unexpected error we can make sure to close tkinkter
         #Outer loop to check the cam
-        while not shutdown_event.is_set():
+        while not state.shutdown_event.is_set():
 
-            cap = cv2.VideoCapture(camera_mode) #Decides if the camera is external or internal
+            cap = cv2.VideoCapture(state.camera_mode) #Decides if the camera is external or internal
 
 
             if not cap.isOpened(): #Checks if the camera opened
@@ -402,9 +380,9 @@ def window_CV(): #The camera
                 )
 
                 cv2.imshow("Camera", waiting_screen)
-                while not shutdown_event.is_set():
-                    if camera_change_event.wait(timeout=0.1):
-                        camera_change_event.clear()
+                while not state.shutdown_event.is_set():
+                    if state.camera_change_event.wait(timeout=0.1):
+                        state.camera_change_event.clear()
                         break
 
                     key = cv2.waitKey(1) & 0xFF
@@ -412,17 +390,17 @@ def window_CV(): #The camera
                     if key == ord("q") or cv2.getWindowProperty(
                         "Camera", cv2.WND_PROP_VISIBLE
                     ) < 1:
-                        shutdown_event.set()
+                        state.shutdown_event.set()
                         break
 
-                    if shutdown_event.is_set():
+                    if state.shutdown_event.is_set():
                         break
 
                 continue
 
 
             #Inside loop to add filters
-            while not shutdown_event.is_set():
+            while not state.shutdown_event.is_set():
 
 
                 ret, raw_frame = cap.read()
@@ -431,8 +409,8 @@ def window_CV(): #The camera
                 if not ret: #Checks if we can receive the frames
                     print("Can't receive frame")
 
-                    frame = None #This clears the old frame if the camera suddenly stops working
-                    original_frame = None #This clears the old frame if the camera suddenly stops working
+                    state.frame = None #This clears the old frame if the camera suddenly stops working
+                    state.original_frame = None #This clears the old frame if the camera suddenly stops working
 
                     #A waiting screen which tells the problem
                     waiting_screen = np.zeros((480, 640, 3), dtype=np.uint8)
@@ -450,9 +428,9 @@ def window_CV(): #The camera
                     cv2.imshow("Camera", waiting_screen)
 
 
-                    while not shutdown_event.is_set():
-                        if camera_change_event.wait(timeout=0.1):
-                            camera_change_event.clear()
+                    while not state.shutdown_event.is_set():
+                        if state.camera_change_event.wait(timeout=0.1):
+                            state.camera_change_event.clear()
                             break
 
                         key = cv2.waitKey(1) & 0xFF
@@ -460,24 +438,24 @@ def window_CV(): #The camera
                         if key == ord("q") or cv2.getWindowProperty(
                             "Camera", cv2.WND_PROP_VISIBLE
                         ) < 1:
-                            shutdown_event.set()
+                            state.shutdown_event.set()
                             break
 
-                    if shutdown_event.is_set():
+                    if state.shutdown_event.is_set():
                         break
 
                     break
 
 
-                original_frame = raw_frame.copy() #Keeps the original camera as a copy to use it later if needed
+                state.original_frame = raw_frame.copy() #Keeps the original camera as a copy to use it later if needed
 
 
                 #Filters
                 filtered = raw_frame
                 #Sharpening kernel
-                if sharpening_entry is not None:
+                if state.sharpening_entry is not None:
 
-                    amount = float(sharpening_entry) / 10
+                    amount = float(state.sharpening_entry) / 10
 
                     sharpening_kernel = np.array([
                                                     [0, -amount, 0],
@@ -488,13 +466,13 @@ def window_CV(): #The camera
                     filtered = cv2.filter2D(filtered, -1 , sharpening_kernel )
 
 
-                filtered = cv2.blur(filtered, (int(blur_entry), int(blur_entry))) #Blur
+                filtered = cv2.blur(filtered, (int(state.blur_entry), int(state.blur_entry))) #Blur
 
-                filtered = cv2.convertScaleAbs(filtered, alpha=float(contrast_entry), beta=float(brightness_entry))
+                filtered = cv2.convertScaleAbs(filtered, alpha=float(state.contrast_entry), beta=float(state.brightness_entry))
                 #bigger than 1 means adding contrast 
                 #negative beta means lowering positive means adding brightness
 
-                frame = filtered
+                state.frame = filtered
                 
                                                                                             
                 
@@ -502,7 +480,7 @@ def window_CV(): #The camera
                 #We use display on the screen and frame to take photos
                 display = filtered
 
-                if edge_cam == 1: #Checks if the user switched on the edge detection
+                if state.edge_cam == 1: #Checks if the user switched on the edge detection
                     display = get_edges(filtered)
 
 
@@ -510,15 +488,15 @@ def window_CV(): #The camera
                 cv2.imshow('Camera', display) 
 
                 #Checks if the user clicked the change the camera button after the camera has opened for once
-                if camera_change_event.is_set():
-                    camera_change_event.clear()
+                if state.camera_change_event.is_set():
+                    state.camera_change_event.clear()
                     break
 
 
                 #When clicked 'q' or X wait for one second and then break
                 key = cv2.waitKey(1) & 0xFF
                 if key == ord('q') or cv2.getWindowProperty('Camera', cv2.WND_PROP_VISIBLE) < 1:
-                    shutdown_event.set()
+                    state.shutdown_event.set()
                     break
             
             
@@ -527,30 +505,25 @@ def window_CV(): #The camera
     finally:
         if cap is not None:
             cap.release()
-        shutdown_event.set()
+        state.shutdown_event.set()
         cv2.destroyAllWindows()        
 
 
-
 def reset_button(): #Turns every valuable back to how they were to reset the filters
-    global blur_entry
-    global contrast_entry
-    global sharpening_entry
-    global brightness_entry
-    global edge_cam
+    
+    
 
-    blur_entry = 1
-    contrast_entry = 1
-    sharpening_entry = None
-    brightness_entry = 0
-    edge_cam = 0
+    state.blur_entry = 1
+    state.contrast_entry = 1
+    state.sharpening_entry = None
+    state.brightness_entry = 0
+    state.edge_cam = 0
 
-    blur_label.configure(text = "Blur: 1")
-    contrast_label.configure(text = "Contrast: 1")
-    sharpening_label.configure(text = "Sharpening: 0")
-    brightness_label.configure(text = "Brightness: 0")
-    edge_label.configure(text= "Edge detection is closed")
-
+    state.blur_label.configure(text = "Blur: 1")
+    state.contrast_label.configure(text = "Contrast: 1")
+    state.sharpening_label.configure(text = "Sharpening: 0")
+    state.brightness_label.configure(text = "Brightness: 0")
+    state.edge_label.configure(text= "Edge detection is closed")
 
 
 t1 = threading.Thread(target = window_CTk) #Assigns
