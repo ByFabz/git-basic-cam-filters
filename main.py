@@ -8,24 +8,25 @@ import math #To be able to block inputs such as nan or inf
 
 
 shutdown_event = threading.Event() #The event which lets us close both screens at once
-
-camera_change_event = threading.Event()
+camera_change_event = threading.Event() #The event which lets us change the camera mode
 
 frame = None #This is used to fix the issue of code bugging out when trying to take a photo before camera is ready
-
 original_frame = None #This will be used to take a photo without the filters
 
 camera_mode = 0 #To decide if the camera is internal or external
 
 edge_cam = 0 #To be able to check if we want the edged cam open or not
-
 blur_entry = 1 #For global we need it as 1 for no effects
-
 sharpening_entry = None #For global we need it as none for no effects
-
 contrast_entry = 1 #For global we need it as 1 for no effects
-
 brightness_entry = 0 #For global we need it as 0 for no effects
+
+blur_label = None
+brightness_label = None
+contrast_label = None
+sharpening_label = None
+edge_label = None
+
 
 def choose_internal_camera_mode(): #To change the variable which tells opencv to read which camera
     global camera_mode
@@ -58,17 +59,17 @@ def take_normal_photo(): #Take a normal photo button function
     
                 if saved: #If it saved we will print the normal saved answer
                     label = ctk.CTkLabel(app, text= str(file_path) + ' is saved')
-                    label.place(x=450, y=340)  #Position the label
+                    label.place(x=220, y=235)  #Position the label
                     app.after(5000, lambda: label.destroy())  #Destorys after 5 seconds
     
                 else:
                     label = ctk.CTkLabel(app, text="Photo could not be saved")
-                    label.place(x=450, y=340)  #Position the label
+                    label.place(x=220, y=235)  #Position the label
                     app.after(5000, lambda: label.destroy())  #Destorys after 5 seconds
     
             except cv2.error as e: #If they did change the file type then it will not work
                 label = ctk.CTkLabel(app, text=f"Error saving photo: {e}")
-                label.place(x=450, y=340)  #Position the label
+                label.place(x=220, y=235)  #Position the label
                 app.after(5000, lambda: label.destroy())  #Destorys after 5 seconds
 
 
@@ -92,17 +93,17 @@ def take_filtered_photo(): #Take a photo button function
 
             if saved: #If it saved we will print the normal saved answer
                 label = ctk.CTkLabel(app, text= str(file_path) + ' is saved')
-                label.place(x=450, y=340)  #Position the label
+                label.place(x=220, y=235)  #Position the label
                 app.after(5000, lambda: label.destroy())  #Destorys after 5 seconds
 
             else:
                 label = ctk.CTkLabel(app, text="Photo could not be saved")
-                label.place(x=450, y=340)  #Position the label
+                label.place(x=220, y=235)  #Position the label
                 app.after(5000, lambda: label.destroy())  #Destorys after 5 seconds
 
         except cv2.error as e: #If they did change the file type then it will not work
             label = ctk.CTkLabel(app, text=f"Error saving photo: {e}")
-            label.place(x=450, y=340)  #Position the label
+            label.place(x=220, y=235)  #Position the label
             app.after(5000, lambda: label.destroy())  #Destorys after 5 seconds
 
 
@@ -127,17 +128,17 @@ def take_edged_photo():
     
                 if saved: #If it saved we will print the normal saved answer
                     label = ctk.CTkLabel(app, text= str(file_path) + ' is saved')
-                    label.place(x=450, y=340)  #Position the label
+                    label.place(x=220, y=235)  #Position the label
                     app.after(5000, lambda: label.destroy())  #Destorys after 5 seconds
     
                 else:
                     label = ctk.CTkLabel(app, text="Photo could not be saved")
-                    label.place(x=450, y=340)  #Position the label
+                    label.place(x=220, y=235)  #Position the label
                     app.after(5000, lambda: label.destroy())  #Destorys after 5 seconds
     
             except cv2.error as e: #If they did change the file type then it will not work
                 label = ctk.CTkLabel(app, text=f"Error saving photo: {e}")
-                label.place(x=450, y=340)  #Position the label
+                label.place(x=220, y=235)  #Position the label
                 app.after(5000, lambda: label.destroy())  #Destorys after 5 seconds
 
 
@@ -159,7 +160,8 @@ def brightness_dialog(): #Brightness button function
                 input = float(input) #Checks if the input is right and then assigns it
                 if -255 <= input <= 255 and math.isfinite(input):
                     brightness_entry = input
-                    return brightness_entry
+                    brightness_label.configure(text = f'Brightness: {brightness_entry}')
+                    return 
             except ValueError: #Asks again if the input was wrong
                 continue  
 
@@ -183,7 +185,8 @@ def blur_dialog(): #Blur button function
                 if 1 <= input <= 31:
                     if input % 2 != 0:
                         blur_entry = input
-                        return blur_entry
+                        blur_label.configure(text = f'Blur: {blur_entry}')
+                        return 
                     
             except ValueError: #Asks again if the input was wrong
                 continue    
@@ -207,7 +210,8 @@ def contrast_dialog(): #Contrast button function
                 input = float(input)
                 if math.isfinite(input) and 1<= input <= 10: #Makes sure the input is right
                     contrast_entry = input #Assigns it
-                    return contrast_entry
+                    contrast_label.configure(text = f'Contrast: {contrast_entry}')
+                    return 
                 
             except ValueError: #Asks again if the input was wrong
                     continue  
@@ -236,11 +240,13 @@ def sharpening_dialog(): #Sharpening button fonction
 
                 if input == 0: #0 means no change
                     sharpening_entry = None
-                    return sharpening_entry
+                    sharpening_label.configure(text = f'Sharpening: 0')
+                    return 
                     
                 if 0 < input <= 50: 
                     sharpening_entry = input #Assigns the value
-                    return sharpening_entry
+                    sharpening_label.configure(text = f'Sharpening: {sharpening_entry}')
+                    return 
                     
             except ValueError: #Asks again if the input was wrong
                 continue  
@@ -252,9 +258,11 @@ def edge_detection_button():
 
     if edge_cam == 0:
             edge_cam = 1
+            edge_label.configure(text = 'Edge detection is open')
 
     elif edge_cam == 1:
         edge_cam = 0
+        edge_label.configure(text = 'Edge detection is closed')
 
 
 def get_edges(img):
@@ -267,47 +275,72 @@ def get_edges(img):
 def window_CTk(): #The UI 
 
     global app
-
+    global blur_label 
+    global brightness_label 
+    global contrast_label 
+    global sharpening_label 
+    global edge_label
 
     app = ctk.CTk() #Scren
     app.title('filters') #Title
-    app.geometry('1200x625') #Geometry
+    app.geometry('700x350') #Geometry
     ctk.set_default_color_theme('blue') #Button colors 
     ctk.set_appearance_mode('dark') #Background
 
-
+    #Filter buttons
     button = ctk.CTkButton(app, text='Blur level' , command=blur_dialog) #Blur button
-    button.place(x = 520 , y = 10) 
+    button.place(x = 30 , y = 10) 
 
     button = ctk.CTkButton(app, text='Brightness level' , command=brightness_dialog) #Brightness button
-    button.place(x = 520 , y = 55)
+    button.place(x = 30 , y = 55)
 
     button = ctk.CTkButton(app, text='Contrast level' , command=contrast_dialog) #Contrast button
-    button.place(x = 520 , y = 100)
+    button.place(x = 30 , y = 100)
 
     button = ctk.CTkButton(app, text='Sharpening level' , command=sharpening_dialog) #Sharpness button
-    button.place(x = 520 , y = 145)
+    button.place(x = 30 , y = 145)
 
     button = ctk.CTkButton(app, text='Edge detection' , command=edge_detection_button) #Edge detection button
-    button.place(x = 520 , y = 190)
+    button.place(x = 30 , y = 190)
 
     button = ctk.CTkButton(app, text='Reset the filters' , command=reset_button) #Reset the filters button
-    button.place(x = 520 , y = 235)
+    button.place(x = 30 , y = 235)
 
-    button = ctk.CTkButton(app, text='Take a photo without the filters' , command=take_normal_photo) #Take a normal photo button
-    button.place(x = 520 , y = 495)
 
-    button = ctk.CTkButton(app, text='Take a photo' , command=take_filtered_photo) #Take a photo with the filters button
-    button.place(x = 520 , y = 530)
+    #Take a photo buttons
+    button = ctk.CTkButton(app, text='Take a filtered photo' , command=take_filtered_photo) #Take a normal photo button
+    button.place(x = 470 , y = 145)
+
+    button = ctk.CTkButton(app, text='Take a normal photo' , command=take_normal_photo) #Take a photo with the filters button
+    button.place(x = 470 , y = 100)
 
     button = ctk.CTkButton(app, text='Take an edged photo' , command=take_edged_photo) #Take an edged photo button
-    button.place(x = 520 , y = 575)
+    button.place(x = 470 , y = 190)
 
+
+    #Camera mode buttons
     button = ctk.CTkButton(app, text='Internal Camera' , command=choose_internal_camera_mode) #Choose internal camera button
-    button.place(x = 700 , y = 575)
+    button.place(x = 470 , y = 10)
 
     button = ctk.CTkButton(app, text='External Camera' , command=choose_external_camera_mode) #Choose external camera button
-    button.place(x = 700 , y = 610)
+    button.place(x = 470 , y = 55)
+
+
+    #Indicator labels
+    blur_label = ctk.CTkLabel(app, text="Blur: 1")
+    blur_label.place(x=220, y=10)
+
+    contrast_label = ctk.CTkLabel(app, text="Contrast: 1")
+    contrast_label.place(x=220, y=100)
+
+    sharpening_label = ctk.CTkLabel(app, text="Sharpening: 0")
+    sharpening_label.place(x=220, y=145)
+
+    brightness_label = ctk.CTkLabel(app, text="Brightness: 0")
+    brightness_label.place(x=220, y=55)
+
+    edge_label = ctk.CTkLabel(app, text="Edge detection is closed")
+    edge_label.place(x=220, y=190)
 
     
 
@@ -383,10 +416,7 @@ def window_CV(): #The camera
         while not shutdown_event.is_set():
 
 
-            
             ret, frame = cap.read()
-            original_frame = frame.copy() #Keeps the original camera as a copy to use it later if needed
-
             
 
             if not ret: #Checks if we can receive the frames
@@ -426,7 +456,10 @@ def window_CV(): #The camera
 
                 break
 
-            
+
+            original_frame = frame.copy() #Keeps the original camera as a copy to use it later if needed
+
+
             #Filters
 
             #Sharpening kernel
@@ -495,6 +528,12 @@ def reset_button(): #Turns every valuable back to how they were to reset the fil
     sharpening_entry = None
     brightness_entry = 0
     edge_cam = 0
+
+    blur_label.configure(text = "Blur: 1")
+    contrast_label.configure(text = "Contrast: 1")
+    sharpening_label.configure(text = "Sharpening: 0")
+    brightness_label.configure(text = "Brightness: 0")
+    edge_label.configure(text= "Edge detection is closed")
 
 
 
