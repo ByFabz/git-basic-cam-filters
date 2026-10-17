@@ -33,7 +33,7 @@ cd git-basic-cam-filters
 Make sure Python is installed, then run:
 
 ```bash
-pip install -r requirements.txt
+python -m pip install -r requirements.txt
 ```
 
 ## Usage
@@ -44,9 +44,7 @@ Run the application using:
 python main.py
 ```
 
-Allow the application to access your camera if prompted.
-
-Use the interface to adjust filters, switch camera modes, and save images.
+Make sure your camera is connected and accessible. Use the interface to adjust filters, switch between cameras, and save images.
 
 ## Project Structure
 
@@ -60,11 +58,13 @@ Use the interface to adjust filters, switch camera modes, and save images.
 
 ## Requirements
 
-Python 3.13.2 (the version used for testing).
-Windows (The application has been tested on Windows. Compatibility with macOS has not been verified.).
-A working camera.
-The Python dependencies listed in requirements.txt.
+- Python 3.13.2 (version used for testing).
+- Windows (tested platform).
+- A working camera.
+- The dependencies listed in `requirements.txt`.
+
+**Note:** Compatibility with macOS has not been verified.
 
 ## License
 
-No license has been specified yet.
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
