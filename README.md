@@ -14,7 +14,7 @@ A Python application that uses OpenCV and CustomTkinter to apply real-time camer
 
 ## Screenshot
 
-![Camera Filters application](Assets/screenshot.png)
+![Camera Filters application](Assets/screenshot.PNG)
 
 ## Technologies Used
 
