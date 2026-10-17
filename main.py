@@ -10,28 +10,7 @@ import numpy as np #For the sharpening function
 import state
 import button_commands 
 import photo_functions
-
-
-
-def choose_internal_camera_mode(): #To change the variable which tells opencv to read which camera
-    
-    state.camera_mode = 0
-    state.camera_change_event.set()
-
-def choose_external_camera_mode():
-    
-    state.camera_mode = 1
-    state.camera_change_event.set()
-
-
-
-
-
-def get_edges(img):
-
-    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    blurred = cv2.GaussianBlur(gray, (5, 5), 0)
-    return cv2.Canny(blurred, 100, 200)
+import filters_and_extras
 
     
 def window_CTk(): #The UI 
@@ -76,10 +55,10 @@ def window_CTk(): #The UI
 
 
     #Camera mode buttons
-    button = ctk.CTkButton(app, text='Internal Camera' , command=choose_internal_camera_mode) #Choose internal camera button
+    button = ctk.CTkButton(app, text='Internal Camera' , command=filters_and_extras.choose_internal_camera_mode) #Choose internal camera button
     button.place(x = 470 , y = 10)
 
-    button = ctk.CTkButton(app, text='External Camera' , command=choose_external_camera_mode) #Choose external camera button
+    button = ctk.CTkButton(app, text='External Camera' , command=filters_and_extras.choose_external_camera_mode) #Choose external camera button
     button.place(x = 470 , y = 55)
 
 
@@ -252,7 +231,7 @@ def window_CV(): #The camera
                 display = filtered
 
                 if state.edge_cam == 1: #Checks if the user switched on the edge detection
-                    display = get_edges(filtered)
+                    display = filters_and_extras.get_edges(filtered)
 
 
                 #Shows display
