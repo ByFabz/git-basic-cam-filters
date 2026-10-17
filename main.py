@@ -375,68 +375,25 @@ def window_CV(): #The camera
     global frame
     global original_frame #We put it before applying the filters to have the camera without the filters
 
-    #Outer loop to check the cam
-    while not shutdown_event.is_set():
+    cap = None #We will use it for the finally part
 
-        cap = cv2.VideoCapture(camera_mode) #Decides if the camera is external or internal
-
-
-        if not cap.isOpened(): #Checks if the camera opened
-            print("Can't open camera")
-            cap.release() #We could not open it so we use release
-
-            #A waiting screen which tells the problem
-            waiting_screen = np.zeros((480,640,3), dtype=np.uint8) 
-
-            cv2.putText(
-                waiting_screen,
-                "Camera not found",
-                (150, 220),
-                cv2.FONT_HERSHEY_SIMPLEX,
-                1,
-                (255, 255, 255),
-                2
-            )
-
-            cv2.imshow("Camera", waiting_screen)
-            while not shutdown_event.is_set():
-                if camera_change_event.wait(timeout=0.1):
-                    camera_change_event.clear()
-                    break
-
-                key = cv2.waitKey(1) & 0xFF
-
-                if key == ord("q") or cv2.getWindowProperty(
-                    "Camera", cv2.WND_PROP_VISIBLE
-                ) < 1:
-                    shutdown_event.set()
-                    break
-
-                if shutdown_event.is_set():
-                    break
-
-            continue
-
-
-        #Inside loop to add filters
+    try: #We use try and finally just so that if we get an unexpected error we can make sure to close tkinkter
+        #Outer loop to check the cam
         while not shutdown_event.is_set():
 
+            cap = cv2.VideoCapture(camera_mode) #Decides if the camera is external or internal
 
-            ret, raw_frame = cap.read()
-            
 
-            if not ret: #Checks if we can receive the frames
-                print("Can't receive frame")
-
-                frame = None #This clears the old frame if the camera suddenly stops working
-                original_frame = None #This clears the old frame if the camera suddenly stops working
+            if not cap.isOpened(): #Checks if the camera opened
+                print("Can't open camera")
+                cap.release() #We could not open it so we use release
 
                 #A waiting screen which tells the problem
-                waiting_screen = np.zeros((480, 640, 3), dtype=np.uint8)
+                waiting_screen = np.zeros((480,640,3), dtype=np.uint8) 
 
                 cv2.putText(
                     waiting_screen,
-                    "No frame received",
+                    "Camera not found",
                     (150, 220),
                     cv2.FONT_HERSHEY_SIMPLEX,
                     1,
@@ -445,8 +402,6 @@ def window_CV(): #The camera
                 )
 
                 cv2.imshow("Camera", waiting_screen)
-
-
                 while not shutdown_event.is_set():
                     if camera_change_event.wait(timeout=0.1):
                         camera_change_event.clear()
@@ -460,71 +415,121 @@ def window_CV(): #The camera
                         shutdown_event.set()
                         break
 
-                if shutdown_event.is_set():
+                    if shutdown_event.is_set():
+                        break
+
+                continue
+
+
+            #Inside loop to add filters
+            while not shutdown_event.is_set():
+
+
+                ret, raw_frame = cap.read()
+                
+
+                if not ret: #Checks if we can receive the frames
+                    print("Can't receive frame")
+
+                    frame = None #This clears the old frame if the camera suddenly stops working
+                    original_frame = None #This clears the old frame if the camera suddenly stops working
+
+                    #A waiting screen which tells the problem
+                    waiting_screen = np.zeros((480, 640, 3), dtype=np.uint8)
+
+                    cv2.putText(
+                        waiting_screen,
+                        "No frame received",
+                        (150, 220),
+                        cv2.FONT_HERSHEY_SIMPLEX,
+                        1,
+                        (255, 255, 255),
+                        2
+                    )
+
+                    cv2.imshow("Camera", waiting_screen)
+
+
+                    while not shutdown_event.is_set():
+                        if camera_change_event.wait(timeout=0.1):
+                            camera_change_event.clear()
+                            break
+
+                        key = cv2.waitKey(1) & 0xFF
+
+                        if key == ord("q") or cv2.getWindowProperty(
+                            "Camera", cv2.WND_PROP_VISIBLE
+                        ) < 1:
+                            shutdown_event.set()
+                            break
+
+                    if shutdown_event.is_set():
+                        break
+
                     break
 
-                break
+
+                original_frame = raw_frame.copy() #Keeps the original camera as a copy to use it later if needed
 
 
-            original_frame = raw_frame.copy() #Keeps the original camera as a copy to use it later if needed
+                #Filters
+                filtered = raw_frame
+                #Sharpening kernel
+                if sharpening_entry is not None:
+
+                    amount = float(sharpening_entry) / 10
+
+                    sharpening_kernel = np.array([
+                                                    [0, -amount, 0],
+                                                    [-amount, 1 + 4 * amount, -amount],
+                                                    [0, -amount, 0]
+                                                                ], dtype=np.float32)
+                    
+                    filtered = cv2.filter2D(filtered, -1 , sharpening_kernel )
 
 
-            #Filters
-            filtered = raw_frame
-            #Sharpening kernel
-            if sharpening_entry is not None:
+                filtered = cv2.blur(filtered, (int(blur_entry), int(blur_entry))) #Blur
 
-                amount = float(sharpening_entry) / 10
+                filtered = cv2.convertScaleAbs(filtered, alpha=float(contrast_entry), beta=float(brightness_entry))
+                #bigger than 1 means adding contrast 
+                #negative beta means lowering positive means adding brightness
 
-                sharpening_kernel = np.array([
-                                                [0, -amount, 0],
-                                                [-amount, 1 + 4 * amount, -amount],
-                                                [0, -amount, 0]
-                                                            ], dtype=np.float32)
+                frame = filtered
                 
-                filtered = cv2.filter2D(filtered, -1 , sharpening_kernel )
+                                                                                            
+                
+                
+                #We use display on the screen and frame to take photos
+                display = filtered
+
+                if edge_cam == 1: #Checks if the user switched on the edge detection
+                    display = get_edges(filtered)
 
 
-            filtered = cv2.blur(filtered, (int(blur_entry), int(blur_entry))) #Blur
+                #Shows display
+                cv2.imshow('Camera', display) 
 
-            filtered = cv2.convertScaleAbs(filtered, alpha=float(contrast_entry), beta=float(brightness_entry))
-            #bigger than 1 means adding contrast 
-            #negative beta means lowering positive means adding brightness
+                #Checks if the user clicked the change the camera button after the camera has opened for once
+                if camera_change_event.is_set():
+                    camera_change_event.clear()
+                    break
 
-            frame = filtered
+
+                #When clicked 'q' or X wait for one second and then break
+                key = cv2.waitKey(1) & 0xFF
+                if key == ord('q') or cv2.getWindowProperty('Camera', cv2.WND_PROP_VISIBLE) < 1:
+                    shutdown_event.set()
+                    break
             
-                                                                                        
             
-            
-            #We use display on the screen and frame to take photos
-            display = filtered
+            cap.release() #Stops catching the camera
 
-            if edge_cam == 1: #Checks if the user switched on the edge detection
-                display = get_edges(filtered)
+    finally:
+        if cap is not None:
+            cap.release()
+        shutdown_event.set()
+        cv2.destroyAllWindows()        
 
-
-            #Shows display
-            cv2.imshow('Camera', display) 
-
-            #Checks if the user clicked the change the camera button after the camera has opened for once
-            if camera_change_event.is_set():
-                camera_change_event.clear()
-                break
-
-
-            #When clicked 'q' or X wait for one second and then break
-            key = cv2.waitKey(1) & 0xFF
-            if key == ord('q') or cv2.getWindowProperty('Camera', cv2.WND_PROP_VISIBLE) < 1:
-                shutdown_event.set()
-                break
-        
-        
-        cap.release() #Stops catching the camera
-
-
-
-
-    cv2.destroyAllWindows() #Destroys the camera screen
 
 
 def reset_button(): #Turns every valuable back to how they were to reset the filters
