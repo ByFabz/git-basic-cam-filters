@@ -5,7 +5,6 @@ import cv2
 
 import filters_and_extras
 
-
 def take_normal_photo(app): #Take a normal photo button function
 
     current = state.original_frame #To stop getting a None error
@@ -41,7 +40,6 @@ def take_normal_photo(app): #Take a normal photo button function
                 label.place(x=220, y=235)  #Position the label
                 app.after(5000, lambda: label.destroy())  #Destorys after 5 seconds
 
-
 def take_filtered_photo(app): #Take a photo button function
 
     current = state.frame #To stop getting a None error
@@ -76,7 +74,6 @@ def take_filtered_photo(app): #Take a photo button function
             label = ctk.CTkLabel(app, text=f"Error saving photo: {e}")
             label.place(x=220, y=235)  #Position the label
             app.after(5000, lambda: label.destroy())  #Destorys after 5 seconds
-
 
 def take_edged_photo(app):
 

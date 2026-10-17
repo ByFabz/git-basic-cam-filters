@@ -1,8 +1,6 @@
 import cv2
 
-
 import state
-
 
 def get_edges(img):
 
