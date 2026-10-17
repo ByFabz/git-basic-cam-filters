@@ -12,6 +12,10 @@ A Python application that uses OpenCV and CustomTkinter to apply real-time camer
 - **Photo Capture:** Save normal, filtered, and edge-detected images.
 - **Camera Selection:** Switch between internal and external cameras.
 
+## Screenshot
+
+![Camera Filters application](assets/screenshot.png)
+
 ## Technologies Used
 
 - Python
@@ -45,6 +49,11 @@ python main.py
 ```
 
 Make sure your camera is connected and accessible. Use the interface to adjust filters, switch between cameras, and save images.
+
+## Notes
+
+-Press Q while the camera window is active to close it. You can also close the application by clicking the X button on the camera window or the UI.
+-A thread-related error may appear in the terminal a few seconds after closing the camera window.
 
 ## Project Structure
 
